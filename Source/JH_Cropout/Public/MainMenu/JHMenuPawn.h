@@ -6,6 +6,7 @@
 #include "GameFramework/Pawn.h"
 #include "JHMenuPawn.generated.h"
 
+class UCommonUserWidget;
 UCLASS()
 class JH_CROPOUT_API AJHMenuPawn : public APawn
 {
@@ -26,4 +27,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	
+	
+	
 };

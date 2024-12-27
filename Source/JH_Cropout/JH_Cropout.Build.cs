@@ -8,7 +8,19 @@ public class JH_Cropout : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
+		PublicDependencyModuleNames.AddRange(new string[]
+		{
+			"Core",
+			"CoreUObject", 
+			"Engine",
+			"InputCore", 
+			"EnhancedInput",
+			"UMG",
+			"CommonUI",
+			"Slate",
+			"SlateCore" ,
+			"GameplayTags"
+		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
