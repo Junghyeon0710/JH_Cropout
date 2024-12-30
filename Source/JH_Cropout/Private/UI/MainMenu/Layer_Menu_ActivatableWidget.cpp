@@ -3,10 +3,17 @@
 
 #include "UI/MainMenu/Layer_Menu_ActivatableWidget.h"
 #include "Widgets/CommonActivatableWidgetContainer.h"
+#include "UI/MainMenu/MainMenuActivatableWidget.h"
 
 void ULayer_Menu_ActivatableWidget::NativeOnActivated()
 {
 	Super::NativeOnActivated();
 
+	MainStack->AddWidget<UMainMenuActivatableWidget>(ActivatableWidgetClass)->StackRef = MainStack;
 	
+}
+
+void ULayer_Menu_ActivatableWidget::AddStackItem(const TSubclassOf<UCommonActivatableWidget>& InActivatableWidgetClass)
+{
+	MainStack->AddWidget(InActivatableWidgetClass);
 }

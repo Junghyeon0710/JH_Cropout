@@ -9,9 +9,14 @@
 /**
  * 
  */
+class UCommonActivatableWidgetStack;
+
 UCLASS()
 class JH_CROPOUT_API UMainMenuActivatableWidget : public UCommonActivatableWidget
 {
 	GENERATED_BODY()
-	
+
+public:
+	UPROPERTY(BlueprintReadOnly)
+	TWeakObjectPtr<UCommonActivatableWidgetStack> StackRef;
 };
