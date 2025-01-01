@@ -15,7 +15,9 @@ AJHMainMenuGM::AJHMainMenuGM()
 void AJHMainMenuGM::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
+	checkf(LayerMenuClass,TEXT("No LayerMenuClass"));
+	
 	UCommonActivatableWidget*  LayerMenu = CreateWidget<UCommonActivatableWidget>(GetWorld(),LayerMenuClass);
 	LayerMenu->AddToViewport();
 	LayerMenu->ActivateWidget();
