@@ -8,6 +8,7 @@
 #include "JHGameInstance.generated.h"
 
 class UTransitionWidget;
+class UJHSaveGame;
 /**
  * 
  */
@@ -17,8 +18,12 @@ class JH_CROPOUT_API UJHGameInstance : public UGameInstance, public IJHGameInsta
 	GENERATED_BODY()
 
 public:
+
+	void TransitionIn() const;
+	
 	/** IJHGameInstanceInterface */
 	virtual bool CheckSaveBool() override;
+	virtual void ClearSave(bool ClearSeed) override;
 	/** ~IJHGameInstanceInterface */
 
 	
@@ -26,13 +31,31 @@ public:
 protected:
 
 	virtual void Init() override;
-	
+
+	/**  Save */ 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = Save)
 	bool bHasSave;
 
+	FString SaveName{"SAVE"};
+
+	UPROPERTY(BlueprintReadOnly,Category = Save)
+	TObjectPtr<UJHSaveGame> SaveGame;
+
+	UPROPERTY(BlueprintReadOnly,Category = Save)
+	TSubclassOf<UJHSaveGame> SaveGameClass;
+
+	/**~  Save */ 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
 	TSubclassOf<UTransitionWidget> TransitionWidgetClass;
 
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<UTransitionWidget> UI_Transition;
+
+
+	bool bMusicPlaying;
+private:
+	void LoadGame();
+	void SaveClear();
+
+	
 };

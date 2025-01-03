@@ -10,13 +10,15 @@
 #include "GameMode/JHGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Save/JHGameInstanceInterface.h"
+#include "Widgets/CommonActivatableWidgetContainer.h"
+#include "UI/Elements/PromptActivatableWidget.h"
 
 void UMainMenuActivatableWidget::NativeOnActivated()
 {
 	Super::NativeOnActivated();
 
 	//Reset focus on active (Get Desired Focus Target Is overriden function)
-	if (UWidget* FocusWidget = GetDesiredFocusTarget())
+	if (IsValid(GetDesiredFocusTarget()))
 	{
 		GetDesiredFocusTarget()->SetFocus();
 	};
@@ -27,7 +29,8 @@ void UMainMenuActivatableWidget::NativeOnActivated()
 	{
 		if (IJHGameInstanceInterface* Interface = Cast<IJHGameInstanceInterface>(UGameplayStatics::GetGameInstance(this)))
 		{
-			BTN_Continue->SetIsEnabled(Interface->CheckSaveBool()); 
+			bHasSave = Interface->CheckSaveBool();
+			BTN_Continue->SetIsEnabled(bHasSave); 
 		}
 	}
 
@@ -39,11 +42,11 @@ void UMainMenuActivatableWidget::NativeOnActivated()
 	}
 	BTN_Donate->SetVisibility(ESlateVisibility::Collapsed);
 
-	//
 	
+	// Button Events Bind
 	BTN_Continue->OnClicked().AddLambda([this]()
 	{
-		if (Level.IsValid())
+		if (!Level.IsNull())
 		{
 			UJHBlueprintFunctionLibrary::GetJhGameInstance(this)->OpenLevel(Level);
 		}
@@ -51,9 +54,15 @@ void UMainMenuActivatableWidget::NativeOnActivated()
 
 	BTN_NewGame->OnClicked().AddLambda([this]()
 	{
-		if (Level.IsValid())
+		if (bHasSave)
 		{
-			UJHBlueprintFunctionLibrary::GetJhGameInstance(this)->OpenLevel(Level);
+			if (StackRef.IsValid())
+			{
+				const FString Question = FString::Printf(TEXT("Starting a new game will override your current save. Do you want to continue?"));
+				UPromptActivatableWidget* PromptActivatableWidget = StackRef->AddWidget<UPromptActivatableWidget>(PromptWidgetClass);
+				PromptActivatableWidget->PromptQuestion = FText::FromString(Question);
+				PromptActivatableWidget->OnCallConfirm.BindUObject(this,&ThisClass::ConfirmNewGame);
+			}
 		}
 	});
 
@@ -66,4 +75,17 @@ void UMainMenuActivatableWidget::NativeOnActivated()
 	{
 		GEngine->AddOnScreenDebugMessage(-1,5.f,FColor::Black,FString::Printf(TEXT("Button Click")));
 	});
+}
+
+void UMainMenuActivatableWidget::ConfirmNewGame() const
+{
+	if (IJHGameInstanceInterface* Interface = Cast<IJHGameInstanceInterface>(UGameplayStatics::GetGameInstance(this)))
+	{
+		Interface->ClearSave(true);
+	}
+	
+	if (!Level.IsNull())
+	{
+		UJHBlueprintFunctionLibrary::GetJhGameInstance(this)->OpenLevel(Level);
+	}
 }

@@ -8,6 +8,7 @@
 
 class UCommonButtonBase;
 class ULevel;
+class UPromptActivatableWidget;
 /**
  * 
  */
@@ -38,14 +39,14 @@ protected:
 	UPROPERTY(meta=(BindWidget), BlueprintReadWrite )
 	TObjectPtr<UCommonButtonBase> BTN_Donate;
 
-	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UPromptActivatableWidget> PromptWidgetClass;
+
+	void ConfirmNewGame() const;
 public:
 	UPROPERTY(BlueprintReadOnly)
 	TWeakObjectPtr<UCommonActivatableWidgetStack> StackRef;
-
-	UPROPERTY(EditDefaultsOnly)
-	bool Test;
-
+	
 	UPROPERTY(EditDefaultsOnly)
 	TSoftObjectPtr<UWorld> Level;
 };
