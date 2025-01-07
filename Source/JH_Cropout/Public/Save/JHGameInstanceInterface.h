@@ -24,4 +24,5 @@ class JH_CROPOUT_API IJHGameInstanceInterface
 public:
 	virtual bool CheckSaveBool() = 0;
 	virtual void ClearSave(bool ClearSeed) = 0;
+	virtual void SaveGame() = 0;
 };

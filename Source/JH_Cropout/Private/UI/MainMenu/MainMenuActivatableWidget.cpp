@@ -44,6 +44,7 @@ void UMainMenuActivatableWidget::NativeOnActivated()
 
 	
 	// Button Events Bind
+	//Continue Game
 	BTN_Continue->OnClicked().AddLambda([this]()
 	{
 		if (!Level.IsNull())
@@ -52,6 +53,7 @@ void UMainMenuActivatableWidget::NativeOnActivated()
 		}
 	});
 
+	//If save game already exists, prompt for new game
 	BTN_NewGame->OnClicked().AddLambda([this]()
 	{
 		if (bHasSave)
@@ -64,17 +66,38 @@ void UMainMenuActivatableWidget::NativeOnActivated()
 				PromptActivatableWidget->OnCallConfirm.BindUObject(this,&ThisClass::ConfirmNewGame);
 			}
 		}
+		else
+		{
+			ConfirmNewGame();
+		}
 	});
 
-	BTN_Donate->OnClicked().AddLambda([]()
+	// If save game already exists, prompt for new game
+	BTN_Donate->OnClicked().AddLambda([this]()
 	{
-		GEngine->AddOnScreenDebugMessage(-1,5.f,FColor::Black,FString::Printf(TEXT("Button Click")));
+		if(bHasSave)
+		{
+			const FString Question = FString::Printf(TEXT("Would you like to donate £1.99 to help make the game better? "));
+			UPromptActivatableWidget* PromptActivatableWidget = StackRef->AddWidget<UPromptActivatableWidget>(PromptWidgetClass);
+			PromptActivatableWidget->PromptQuestion = FText::FromString(Question);
+			PromptActivatableWidget->OnCallConfirm.BindUObject(this, &ThisClass::ConfirmDonate);
+		}
+		else
+		{
+			ConfirmNewGame();
+		}
 	});
 
-	BTN_Quit->OnClicked().AddLambda([]()
+	//Add Prompt and set question
+	BTN_Quit->OnClicked().AddLambda([this]()
 	{
-		GEngine->AddOnScreenDebugMessage(-1,5.f,FColor::Black,FString::Printf(TEXT("Button Click")));
+		const FString Question = FString::Printf(TEXT("Are you sure you want to quit?"));
+		UPromptActivatableWidget* PromptActivatableWidget = StackRef->AddWidget<UPromptActivatableWidget>(PromptWidgetClass);
+		PromptActivatableWidget->PromptQuestion = FText::FromString(Question);
+		PromptActivatableWidget->OnCallConfirm.BindUObject(this,&ThisClass::ConfirmQuit);
 	});
+
+	// ~Button Events Bind
 }
 
 void UMainMenuActivatableWidget::ConfirmNewGame() const
@@ -89,3 +112,16 @@ void UMainMenuActivatableWidget::ConfirmNewGame() const
 		UJHBlueprintFunctionLibrary::GetJhGameInstance(this)->OpenLevel(Level);
 	}
 }
+
+void UMainMenuActivatableWidget::ConfirmQuit() const
+{
+	UKismetSystemLibrary::QuitGame(this,nullptr,EQuitPreference::Quit,false);
+}
+
+void UMainMenuActivatableWidget::ConfirmDonate() const
+{
+	const FString Question = FString::Printf(TEXT("Waiting for update..."));
+	UPromptActivatableWidget* PromptActivatableWidget = StackRef->AddWidget<UPromptActivatableWidget>(PromptWidgetClass);
+	PromptActivatableWidget->PromptQuestion = FText::FromString(Question);
+}
+

@@ -41,12 +41,17 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UPromptActivatableWidget> PromptWidgetClass;
-
+	
 	void ConfirmNewGame() const;
-public:
+	void ConfirmQuit() const;
+	void ConfirmDonate() const;
+ public:
 	UPROPERTY(BlueprintReadOnly)
 	TWeakObjectPtr<UCommonActivatableWidgetStack> StackRef;
 	
 	UPROPERTY(EditDefaultsOnly)
 	TSoftObjectPtr<UWorld> Level;
+
+private:
+	
 };

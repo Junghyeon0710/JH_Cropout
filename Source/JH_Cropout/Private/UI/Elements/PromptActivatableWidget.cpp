@@ -15,8 +15,8 @@ void UPromptActivatableWidget::NativeOnInitialized()
 		if (OnCallConfirm.IsBound())
 		{
 			OnCallConfirm.Execute();
-			ClearBindings();
 		}
+		ClearBindings();
 	});
 
 	BTN_Neg->OnClicked().AddLambda([this]()
@@ -24,8 +24,8 @@ void UPromptActivatableWidget::NativeOnInitialized()
 		if (OnCallBack.IsBound())
 		{
 			OnCallBack.Execute();
-			ClearBindings();
 		}
+		ClearBindings();
 	});
 }
 

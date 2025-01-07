@@ -9,6 +9,8 @@
 
 class UTransitionWidget;
 class UJHSaveGame;
+class USoundControlBus;
+class UAudioComponent;
 /**
  * 
  */
@@ -20,14 +22,19 @@ class JH_CROPOUT_API UJHGameInstance : public UGameInstance, public IJHGameInsta
 public:
 
 	void TransitionIn() const;
+	void TransitionOut() const;
+	void ShowTransitionWidget() const;
 	
 	/** IJHGameInstanceInterface */
 	virtual bool CheckSaveBool() override;
 	virtual void ClearSave(bool ClearSeed) override;
+	virtual void SaveGame() override;
 	/** ~IJHGameInstanceInterface */
 
 	
 	void OpenLevel(const TSoftObjectPtr<UWorld>& Level) const;
+
+	void PlayMusic(USoundBase* Audio,const float Volume,const bool Persist);
 protected:
 
 	virtual void Init() override;
@@ -39,10 +46,10 @@ protected:
 	FString SaveName{"SAVE"};
 
 	UPROPERTY(BlueprintReadOnly,Category = Save)
-	TObjectPtr<UJHSaveGame> SaveGame;
+	TObjectPtr<UJHSaveGame> SaveGameRef;
 
-	UPROPERTY(BlueprintReadOnly,Category = Save)
-	TSubclassOf<UJHSaveGame> SaveGameClass;
+	// UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = Save)
+	// TSubclassOf<UJHSaveGame> SaveGameClass;
 
 	/**~  Save */ 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
@@ -56,6 +63,13 @@ protected:
 private:
 	void LoadGame();
 	void SaveClear();
-
 	
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<USoundControlBus> Cropout_Music_WinLose;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<USoundControlBus> Cropout_Music_Stop;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UAudioComponent> AudioComponent;
 };

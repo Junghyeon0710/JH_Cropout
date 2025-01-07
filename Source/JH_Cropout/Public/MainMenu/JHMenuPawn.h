@@ -6,28 +6,32 @@
 #include "GameFramework/Pawn.h"
 #include "JHMenuPawn.generated.h"
 
-class UCommonUserWidget;
+class URotatingMovementComponent;
+class UCameraComponent;
+class USpringArmComponent;
+class UCameraShakeSourceComponent;
 UCLASS()
 class JH_CROPOUT_API AJHMenuPawn : public APawn
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this pawn's properties
 	AJHMenuPawn();
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+private:
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USpringArmComponent> SpringArm;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UCameraComponent> Camera;
 
-	
-	
-	
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UCameraShakeSourceComponent> CameraShakeSource;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<URotatingMovementComponent> RotatingMovement;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UCameraShakeBase> CameraShakeClass;
 };

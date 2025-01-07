@@ -19,7 +19,11 @@ public class JH_Cropout : ModuleRules
 			"CommonUI",
 			"Slate",
 			"SlateCore" ,
-			"GameplayTags"
+			"GameplayTags",
+			"OnlineSubsystem",
+			"OnlineSubsystemUtils",
+			"AudioModulation",
+			"GameplayCameras"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

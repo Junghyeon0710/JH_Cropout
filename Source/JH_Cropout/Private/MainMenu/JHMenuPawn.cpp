@@ -3,32 +3,50 @@
 
 #include "MainMenu/JHMenuPawn.h"
 
-// Sets default values
+#include "Camera/CameraComponent.h"
+#include "Camera/CameraShakeSourceComponent.h"
+#include "GameFramework/RotatingMovementComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Shakes/PerlinNoiseCameraShakePattern.h"
+
 AJHMenuPawn::AJHMenuPawn()
 {
- 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+
 	PrimaryActorTick.bCanEverTick = true;
 
-}
+	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	SpringArm->SetupAttachment(RootComponent);
 
-// Called when the game starts or when spawned
-void AJHMenuPawn::BeginPlay()
-{
-	Super::BeginPlay();
+	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	Camera->SetupAttachment(SpringArm);
+
+	CameraShakeSource = CreateDefaultSubobject<UCameraShakeSourceComponent>(TEXT("CameraShakeSource"));
+	CameraShakeSource->SetupAttachment(RootComponent);
+
+	RotatingMovement = CreateDefaultSubobject<URotatingMovementComponent>(TEXT("RotatingMovement"));
+
+	SpringArm->SetRelativeRotation(FRotator(0.f,-30.f,0.f));
+	SpringArm->TargetArmLength = 7800.f;
+	SpringArm->SocketOffset = FVector(0.f,0.f,200.f);
+	SpringArm->bDoCollisionTest = false;
+
+	Camera->FieldOfView = 20.f;
+	Camera->bLockToHmd = false;
+
+	CameraShakeSource->Attenuation = ECameraShakeAttenuation::Linear;
+	CameraShakeSource->InnerAttenuationRadius = 100000.0f;
+	CameraShakeSource->OuterAttenuationRadius = 100000.0f;
+	
+	check(CameraShakeClass);
+	UCameraShakeBase * CameraShakeBase = NewObject<UCameraShakeBase>(this);
+	UPerlinNoiseCameraShakePattern* PerlinNoisePattern = NewObject<UPerlinNoiseCameraShakePattern>(this);
+	CameraShakeBase->SetRootShakePattern(PerlinNoisePattern);
+	CameraShakeSource->CameraShake = CameraShakeClass;
+	CameraShakeSource->bAutoStart = true;
+
+	RotatingMovement->RotationRate = FRotator(0.f,0.f,5.f);
 	
 }
 
-// Called every frame
-void AJHMenuPawn::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 
-}
-
-// Called to bind functionality to input
-void AJHMenuPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-}
 

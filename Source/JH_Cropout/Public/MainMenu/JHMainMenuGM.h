@@ -7,6 +7,7 @@
 
 #include "JHMainMenuGM.generated.h"
 
+class USoundControlBus;
 /**
  * 
  */
@@ -26,14 +27,29 @@ protected:
 	UPROPERTY(EditAnywhere,Category = Widget)
 	TSubclassOf<UCommonActivatableWidget> LayerMenuClass;
 
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTextureRenderTarget2D> RenderTarget2D;	
 	
-
-	
+	UFUNCTION()
+	void OnLoginUISuccess(APlayerController* PlayerController);
 
 //	TObjectPtr<UCommonUserWidget> test;
 	
 	
 private:
 
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<USoundControlBus> Cropout_Music_Piano_Vol;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<USoundControlBus> Cropout_Music_Perc_Vol;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<USoundControlBus> Cropout_Music_Strings_Delay;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<USoundControlBus> Cropout_Music_WinLose;
 	
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<USoundBase> Audio;
 };
