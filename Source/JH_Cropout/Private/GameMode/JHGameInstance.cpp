@@ -47,6 +47,11 @@ void UJHGameInstance::SaveGame()
 	UGameplayStatics::AsyncSaveGameToSlot(SaveGameRef,SaveName,0,SaveGameToSlotDelegate);
 }
 
+FRandomStream UJHGameInstance::IslandSeed()
+{
+	return IsValid(SaveGameRef) ? SaveGameRef->Seed : FRandomStream();
+}
+
 void UJHGameInstance::TransitionIn() const
 {
 	ShowTransitionWidget();

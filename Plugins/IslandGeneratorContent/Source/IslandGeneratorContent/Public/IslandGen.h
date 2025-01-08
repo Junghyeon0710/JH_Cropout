@@ -13,5 +13,34 @@ UCLASS()
 class ISLANDGENERATORCONTENT_API AIslandGen : public ADynamicMeshActor
 {
 	GENERATED_BODY()
+public:
+	AIslandGen();
+	virtual void OnConstruction(const FTransform& Transform) override;
+protected:
+	virtual void BeginPlay() override;
 	
+private:
+
+	void CreateIsland(bool SpawnMarkers);
+	
+	FRandomStream Seed;
+
+	UPROPERTY()
+	TObjectPtr<UDynamicMesh> DynamicMesh;
+
+	TArray<FVector> SpawnPoints;
+	
+	UPROPERTY(EditAnywhere,BlueprintReadWrite , meta=(AllowPrivateAccess =true))
+	int32 Islands{15};
+	UPROPERTY(EditAnywhere,BlueprintReadWrite , meta=(AllowPrivateAccess =true))
+	float Radius;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite , meta=(AllowPrivateAccess =true))
+	FVector2D IslandsSize{800.f,5000.f};
+	UPROPERTY(EditAnywhere,BlueprintReadWrite , meta=(AllowPrivateAccess =true))
+	float MaxSpawnDistance;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite , meta=(AllowPrivateAccess =true))
+	bool bPreConstruct;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite , meta=(AllowPrivateAccess =true))
+	TSubclassOf<AActor> SpawnMarker;
 };

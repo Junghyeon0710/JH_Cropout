@@ -27,6 +27,7 @@ public class IslandGeneratorContent : ModuleRules
 			{
 				"Core",
 				"GeometryFramework",
+				"GeometryScriptingCore"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

@@ -6,6 +6,7 @@
 #include "GameFramework/Pawn.h"
 #include "JHMenuPawn.generated.h"
 
+class USceneComponent;
 class URotatingMovementComponent;
 class UCameraComponent;
 class USpringArmComponent;
@@ -19,7 +20,9 @@ public:
 	AJHMenuPawn();
 
 private:
-
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USceneComponent> RootComponentDefault;
+	
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USpringArmComponent> SpringArm;
 
@@ -32,6 +35,4 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<URotatingMovementComponent> RotatingMovement;
 
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UCameraShakeBase> CameraShakeClass;
 };

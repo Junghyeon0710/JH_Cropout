@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "Misc/IslandInterface.h"
 #include "Save/JHGameInstanceInterface.h"
 #include "JHGameInstance.generated.h"
 
@@ -15,7 +16,7 @@ class UAudioComponent;
  * 
  */
 UCLASS()
-class JH_CROPOUT_API UJHGameInstance : public UGameInstance, public IJHGameInstanceInterface
+class JH_CROPOUT_API UJHGameInstance : public UGameInstance, public IJHGameInstanceInterface ,public IIslandInterface
 {
 	GENERATED_BODY()
 
@@ -31,6 +32,9 @@ public:
 	virtual void SaveGame() override;
 	/** ~IJHGameInstanceInterface */
 
+	/** IIslandInterface */
+	virtual FRandomStream IslandSeed() override;
+	/** ~IIslandInterface */
 	
 	void OpenLevel(const TSoftObjectPtr<UWorld>& Level) const;
 

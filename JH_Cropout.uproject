@@ -12,7 +12,8 @@
 				"Engine",
 				"GeometryFramework",
 				"CommonUI",
-				"UMG"
+				"UMG",
+				"IslandGeneratorContent"
 			]
 		}
 	],
@@ -31,6 +32,11 @@
 		{
 			"Name": "AudioModulation",
 			"Enabled": true
+		},
+		{
+			"Name": "IslandGeneratorContent",
+			"Enabled": true
 		}
+		
 	]
 }
