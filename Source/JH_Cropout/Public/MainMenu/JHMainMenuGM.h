@@ -27,14 +27,20 @@ protected:
 	UPROPERTY(EditAnywhere,Category = Widget)
 	TSubclassOf<UCommonActivatableWidget> LayerMenuClass;
 
+	UPROPERTY(EditAnywhere,Category = Widget)
+	TObjectPtr<UCommonActivatableWidget> testMenuClass;
+
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UTextureRenderTarget2D> RenderTarget2D;	
 	
 	UFUNCTION()
 	void OnLoginUISuccess(APlayerController* PlayerController);
 
-//	TObjectPtr<UCommonUserWidget> test;
-	
+	UPROPERTY(EditAnywhere,Category = Widget)
+	TSubclassOf<UUserWidget> UserTest;
+
+	UPROPERTY(EditAnywhere,Category = Widget)
+	TObjectPtr<UUserWidget> ObjectTest;
 	
 private:
 

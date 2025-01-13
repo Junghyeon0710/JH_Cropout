@@ -16,6 +16,8 @@ class ISLANDGENERATORCONTENT_API AIslandGen : public ADynamicMeshActor
 public:
 	AIslandGen();
 	virtual void OnConstruction(const FTransform& Transform) override;
+
+	static int32 PlatformSwitch(int32 LowEnd ,int32 HighEnd);
 protected:
 	virtual void BeginPlay() override;
 	
@@ -43,4 +45,7 @@ private:
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite , meta=(AllowPrivateAccess =true))
 	TSubclassOf<AActor> SpawnMarker;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite , meta=(AllowPrivateAccess =true))
+	TObjectPtr<UMaterialParameterCollection> MaterialParameterCollection;
 };

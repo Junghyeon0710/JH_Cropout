@@ -3,25 +3,45 @@
 
 #include "Spawner/Spawner.h"
 
-// Sets default values
+#include "Engine/AssetManager.h"
+
+
 ASpawner::ASpawner()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+
+	PrimaryActorTick.bCanEverTick = false;
 
 }
 
-// Called when the game starts or when spawned
 void ASpawner::BeginPlay()
 {
 	Super::BeginPlay();
+
+	AsyncLoadClasses();
+}
+
+void ASpawner::AsyncLoadClasses()
+{
+	ClassRefIndex = 0;
+	bAsyncComplete = false;
+
+	SpawnTypes[ClassRefIndex].ClassRef.Get();
+	
+	FSoftObjectPath SoftObjectPath(SpawnTypes[ClassRefIndex].ClassRef.ToSoftObjectPath());
+	FStreamableDelegate StreamableDelegate;
+	UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftObjectPath, FStreamableDelegate::CreateLambda([this, SoftObjectPath]()
+	{
+		ClassRefIndex++;
+		if (ClassRefIndex>SpawnTypes.Num())
+		{
+			bAsyncComplete = true;
+		}
+		else
+		{
+			AsyncLoadClasses();
+		}
+   }));
 	
 }
 
-// Called every frame
-void ASpawner::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
 
