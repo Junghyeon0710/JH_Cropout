@@ -3,24 +3,46 @@
 
 #include "Interactable/Interactable.h"
 
+#include "Kismet/KismetRenderingLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
 
-// Sets default values
+// #define TransformToTexture(InVec) \ 
+// 	(GetActorLocation() + 100000.f) /20000.0f * InVec.X; \
+// 	
+
+
+
 AInteractable::AInteractable()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+
 	PrimaryActorTick.bCanEverTick = true;
+
 }
 
-// Called when the game starts or when spawned
 void AInteractable::BeginPlay()
 {
 	Super::BeginPlay();
+
+	FLatentActionInfo LatentInfo;
+	LatentInfo.CallbackTarget = this; // 콜백이 발생할 객체
+	LatentInfo.UUID = 1;             // 고유 ID
+	LatentInfo.Linkage = 0;          // 내부 사용
+	LatentInfo.ExecutionFunction = FName("NextTickFunction");
+	UKismetSystemLibrary::DelayUntilNextTick(this, LatentInfo);
 	
 }
 
-// Called every frame
-void AInteractable::Tick(float DeltaTime)
+void AInteractable::NextTickFunction()
 {
-	Super::Tick(DeltaTime);
+	if (!bEnableGroundBlend) return;
+
+	check(RT_Draw);
+	UCanvas* Canvas;
+	FVector2D Size;
+	FDrawToRenderTargetContext Context;
+	UKismetRenderingLibrary::BeginDrawCanvasToRenderTarget(this,RT_Draw,Canvas,Size,Context);
+	
 }
+
+
 

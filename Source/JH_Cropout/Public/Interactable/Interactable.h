@@ -6,20 +6,23 @@
 #include "GameFramework/Actor.h"
 #include "Interactable.generated.h"
 
+class UTextureRenderTarget2D;
 UCLASS()
 class JH_CROPOUT_API AInteractable : public AActor
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
 	AInteractable();
-
+	void NextTickFunction();
 protected:
-	// Called when the game starts or when spawned
+
 	virtual void BeginPlay() override;
 
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+private:
+	UPROPERTY(EditAnywhere,BlueprintReadOnly ,meta=(AllowPrivateAccess = true))
+	TObjectPtr<UTextureRenderTarget2D> RT_Draw;
+	
+	UPROPERTY(EditAnywhere,BlueprintReadOnly ,meta=(AllowPrivateAccess = true))
+	bool bEnableGroundBlend;
 };

@@ -27,7 +27,9 @@ public class IslandGeneratorContent : ModuleRules
 			{
 				"Core",
 				"GeometryFramework",
-				"GeometryScriptingCore"
+				"GeometryScriptingCore",
+				"NavigationSystem",
+				"JH_Cropout"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
