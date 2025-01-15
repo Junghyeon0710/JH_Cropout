@@ -6,13 +6,13 @@
 #include "NavigationSystem.h"
 #include "Engine/AssetManager.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "NavigationData.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Spawner/IslandPluginInterface.h"
 #include "Components/StaticMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Misc/IslandInterface.h"
 #include "Save/JHGameInstanceInterface.h"
+#include "GameFramework/GameModeBase.h"
 
 
 ASpawner::ASpawner()
@@ -54,7 +54,7 @@ void ASpawner::AsyncLoadClass()
 	UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftObjectPath, FStreamableDelegate::CreateLambda([this, SoftObjectPath]()
 	{
 		ClassRefIndex++;
-		if (ClassRefIndex>SpawnTypes.Num())
+		if (ClassRefIndex > SpawnTypes.Num()-1)
 		{
 			bAsyncComplete = true;
 		}
@@ -67,6 +67,7 @@ void ASpawner::AsyncLoadClass()
 
 void ASpawner::WaitForNavMeshAndAssets()
 {
+	GEngine->AddOnScreenDebugMessage(-1,5.f,FColor::Red,TEXT("sdadsa"));
 	Counter = 0;
 	IndexCounter = 0;
 
@@ -111,12 +112,7 @@ void ASpawner::ReadyToSpawn()
 			{
 				if (bCallSave)
 				{
-					//Test 고쳐야됨
-					if (UJHGameInstanceInterface* Interface2 = Cast<UJHGameInstanceInterface>(UGameplayStatics::GetGameInstance(this)))
-					{
-						//Interface2->Chec
-						//Interface2->CheckSaveBool();
-					}
+				
 						
 				}
 			}
@@ -156,7 +152,7 @@ void ASpawner::SpawnAssets(TSubclassOf<AActor> Class, const FSpawnData& SpawnPar
 				AActor* Actor = GetWorld()->SpawnActor<AActor>(Class);
 				LocalCount++;
 
-				if (IIslandPluginInterface* Interface = Cast<IIslandPluginInterface>(Actor))
+				if (IIslandInterface* Interface = Cast<IIslandInterface>(Actor))
 				{
 					Interface->ScaleUp(LocalCount / TotalCounter);
 				}
@@ -200,7 +196,16 @@ void ASpawner::SpawnInst(UInstancedStaticMeshComponent* Class, float Radius, int
 	}
 }
 
-void ASpawner::FinishSpawning()
+void ASpawner::FinishSpawning() const
 {
+	if (IJHGameInstanceInterface* Interface = Cast<IJHGameInstanceInterface>(UGameplayStatics::GetGameInstance(this)))
+	{
+		Interface->UpdateAllInteractables();
+	}
+	
+	if (IIslandInterface* Interface = Cast<IIslandInterface>(UGameplayStatics::GetGameMode(this)))
+	{
+		Interface->SpawningComplete();
+	}
 }
 

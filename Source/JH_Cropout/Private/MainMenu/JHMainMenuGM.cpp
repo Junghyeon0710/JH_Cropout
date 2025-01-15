@@ -21,6 +21,10 @@ AJHMainMenuGM::AJHMainMenuGM()
 	
 }
 
+void AJHMainMenuGM::SpawningComplete()
+{
+}
+
 void AJHMainMenuGM::BeginPlay()
 {
 	Super::BeginPlay();

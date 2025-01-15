@@ -10,6 +10,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Save/JHSaveGame.h"
+#include "Interactable/Interactable.h"
 
 void UJHGameInstance::Init()
 {
@@ -47,9 +48,36 @@ void UJHGameInstance::SaveGame()
 	UGameplayStatics::AsyncSaveGameToSlot(SaveGameRef,SaveName,0,SaveGameToSlotDelegate);
 }
 
+void UJHGameInstance::UpdateAllInteractables()
+{
+	check(SaveGameRef);
+	SaveGameRef->Interactables.Empty();
+	TArray<AActor*> Actors;
+	UGameplayStatics::GetAllActorsOfClass(this,InteractableActorClass,Actors);
+
+	for (AActor* Actor : Actors)
+	{
+		AInteractable* Interactable = Cast<AInteractable>(Actor);
+		FSaveInteract Interact;
+		Interact.Location = Interactable->GetTransform();
+		Interact.Health = Interactable->GetProgressionState();
+		Interact.Type = Interactable->GetClass();
+		Interact.Tag = Interactable->Tags.IsValidIndex(0) ? Interactable->Tags[0] : FName();
+		SaveGameRef->Interactables.Add(Interact);
+	}
+}
+
+void UJHGameInstance::SpawningComplete()
+{
+}
+
 FRandomStream UJHGameInstance::IslandSeed()
 {
 	return IsValid(SaveGameRef) ? SaveGameRef->Seed : FRandomStream();
+}
+
+void UJHGameInstance::ScaleUp(float Delay)
+{
 }
 
 void UJHGameInstance::TransitionIn() const

@@ -21,12 +21,13 @@ public:
 	
 	void AsyncLoadClasses();
 	void AsyncLoadClass();
+	UFUNCTION()
 	void WaitForNavMeshAndAssets();
 	void ReadyToSpawn();
 	void SpawnAssets(TSubclassOf<AActor> Class ,const FSpawnData& SpawnParams );
 	FVector SteppedPosition(const FVector& InParam) const;
 	void SpawnInst(UInstancedStaticMeshComponent* Class, float Radius, int32 BiomeCount, int32 MaxPawn);
-	void FinishSpawning();
+	void FinishSpawning() const;
 protected:
 
 	virtual void BeginPlay() override;

@@ -18,10 +18,8 @@
 		{
 			"Name": "IslandGeneratorContent",
 			"Type": "Runtime",
-			"LoadingPhase": "Default",
-			"AdditionalDependencies": [
-				"JH_Cropout"
-			]
+			"LoadingPhase": "Default"
+	
 			
 		}
 	],

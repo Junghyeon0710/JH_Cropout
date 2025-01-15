@@ -8,6 +8,7 @@
 #include "Save/JHGameInstanceInterface.h"
 #include "JHGameInstance.generated.h"
 
+class AInteractable;
 class UTransitionWidget;
 class UJHSaveGame;
 class USoundControlBus;
@@ -30,10 +31,14 @@ public:
 	virtual bool CheckSaveBool() override;
 	virtual void ClearSave(bool ClearSeed) override;
 	virtual void SaveGame() override;
+	virtual void UpdateAllInteractables() override;
+
 	/** ~IJHGameInstanceInterface */
 
 	/** IIslandInterface */
+	virtual void SpawningComplete() override;
 	virtual FRandomStream IslandSeed() override;
+	virtual void ScaleUp(float Delay) override;
 	/** ~IIslandInterface */
 	
 	void OpenLevel(const TSoftObjectPtr<UWorld>& Level) const;
@@ -61,6 +66,9 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<UTransitionWidget> UI_Transition;
+
+	UPROPERTY(BlueprintReadWrite)
+	TSubclassOf<AInteractable> InteractableActorClass;
 
 
 	bool bMusicPlaying;

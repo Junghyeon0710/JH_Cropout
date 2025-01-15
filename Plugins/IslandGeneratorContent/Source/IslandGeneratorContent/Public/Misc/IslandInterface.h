@@ -22,5 +22,7 @@ class ISLANDGENERATORCONTENT_API IIslandInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual FRandomStream IslandSeed() = 0;
+	virtual FRandomStream IslandSeed();
+	virtual void SpawningComplete();
+	virtual void ScaleUp(float Delay);
 };

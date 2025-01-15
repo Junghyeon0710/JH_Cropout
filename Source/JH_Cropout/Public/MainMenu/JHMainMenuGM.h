@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "Misc/IslandInterface.h"
 
 #include "JHMainMenuGM.generated.h"
 
@@ -15,12 +16,16 @@ class UCommonActivatableWidget;
 
 
 UCLASS()
-class JH_CROPOUT_API AJHMainMenuGM : public AGameModeBase
+class JH_CROPOUT_API AJHMainMenuGM : public AGameModeBase ,public IIslandInterface
 {
 	GENERATED_BODY()
 public:
 	AJHMainMenuGM();
 protected:
+
+	//* IIslandInterface /
+	virtual void SpawningComplete() override;
+	//* ~ IIslandInterface/
 
 	virtual void BeginPlay() override;
 
