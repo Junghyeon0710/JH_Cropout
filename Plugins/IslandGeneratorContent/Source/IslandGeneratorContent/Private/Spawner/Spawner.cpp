@@ -82,8 +82,9 @@ void ASpawner::WaitForNavMeshAndAssets()
 
 void ASpawner::ReadyToSpawn()
 {
-	bool bNavigationBeingBuilt = UNavigationSystemV1::IsNavigationBeingBuilt(this);
-	if (!bNavigationBeingBuilt && !bAsyncComplete) return;
+	
+	bool bNavigationBeingBuilt = UNavigationSystemV1::GetNavigationSystem(this)->IsNavigationBeingBuilt(this);
+	if (bNavigationBeingBuilt && !bAsyncComplete) return;
 
 	GetWorld()->GetTimerManager().PauseTimer(NavCheckHandle);
 
@@ -112,8 +113,7 @@ void ASpawner::ReadyToSpawn()
 			{
 				if (bCallSave)
 				{
-				
-						
+					FinishSpawning();
 				}
 			}
 			GetWorld()->GetTimerManager().UnPauseTimer(NavCheckHandle);
@@ -142,14 +142,16 @@ void ASpawner::SpawnAssets(TSubclassOf<AActor> Class, const FSpawnData& SpawnPar
 			for (int i =0; i <= RandomCount; ++i)
 			{
 				FNavLocation SpawnPos;
-				NavSystem->GetRandomPointInNavigableRadius(RandomLocation,SpawnParams.BiomeScale,SpawnPos);
+				NavSystem->GetRandomPointInNavigableRadius(RandomLocation.Location,SpawnParams.BiomeScale,SpawnPos);
 
 				FTransform SpawnTransform;
-				SpawnTransform.SetLocation(SteppedPosition(SpawnPos));
+				SpawnTransform.SetLocation(SteppedPosition(SpawnPos.Location));
 				SpawnTransform.SetRotation(FRotator(0.f,SpawnParams.RandomRotationRange,0.f).Quaternion());
 				SpawnTransform.SetScale3D(FVector(UKismetMathLibrary::RandomFloatInRange(1.f,SpawnParams.ScaleRange+1.f)));
 
-				AActor* Actor = GetWorld()->SpawnActor<AActor>(Class);
+				FActorSpawnParameters SpawnParameters;
+				SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+				AActor* Actor = GetWorld()->SpawnActor<AActor>(Class,SpawnTransform,SpawnParameters);
 				LocalCount++;
 
 				if (IIslandInterface* Interface = Cast<IIslandInterface>(Actor))
@@ -166,7 +168,7 @@ FVector ASpawner::SteppedPosition(const FVector& InParam) const
 	const FVector DivideVector =  UKismetMathLibrary::Divide_VectorFloat(InParam,200.f);
 	
 	const float Value = 200.f; 
-	return FVector(UKismetMathLibrary::Round(DivideVector.X) * Value,UKismetMathLibrary::Round(DivideVector.Y) * bAsyncComplete, 0.f );
+	return FVector(UKismetMathLibrary::Round(DivideVector.X) * Value,UKismetMathLibrary::Round(DivideVector.Y) * Value, 0.f );
 }
 
 void ASpawner::SpawnInst(UInstancedStaticMeshComponent* Class, float Radius, int32 BiomeCount, int32 MaxPawn)
