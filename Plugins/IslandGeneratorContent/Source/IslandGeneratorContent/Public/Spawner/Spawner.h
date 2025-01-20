@@ -26,7 +26,7 @@ public:
 	void ReadyToSpawn();
 	void SpawnAssets(TSubclassOf<AActor> Class ,const FSpawnData& SpawnParams );
 	FVector SteppedPosition(const FVector& InParam) const;
-	void SpawnInst(UInstancedStaticMeshComponent* Class, float Radius, int32 BiomeCount, int32 MaxPawn);
+	void SpawnInst(UInstancedStaticMeshComponent* Class, float Radius, int32 BiomeCount, int32 MaxSpawn);
 	void FinishSpawning() const;
 protected:
 
@@ -56,11 +56,8 @@ private:
 	float TotalCounter;
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly ,meta=(AllowPrivateAccess = true))
-	int32 IndexCounter;
-
-	UPROPERTY(EditAnywhere,BlueprintReadOnly ,meta=(AllowPrivateAccess = true))
-	int32 MaxSpawn;
-
+	int32 IndexCounter = -1;
+	
 	FTimerHandle NavCheckHandle;
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly ,meta=(AllowPrivateAccess = true))

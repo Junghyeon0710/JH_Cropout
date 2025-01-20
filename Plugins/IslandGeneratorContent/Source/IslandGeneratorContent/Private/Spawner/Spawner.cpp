@@ -49,8 +49,8 @@ void ASpawner::AsyncLoadClasses()
 
 void ASpawner::AsyncLoadClass()
 {
+	
 	FSoftObjectPath SoftObjectPath(SpawnTypes[ClassRefIndex].ClassRef.ToSoftObjectPath());
-	FStreamableDelegate StreamableDelegate;
 	UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftObjectPath, FStreamableDelegate::CreateLambda([this, SoftObjectPath]()
 	{
 		ClassRefIndex++;
@@ -84,7 +84,7 @@ void ASpawner::ReadyToSpawn()
 {
 	
 	bool bNavigationBeingBuilt = UNavigationSystemV1::GetNavigationSystem(this)->IsNavigationBeingBuilt(this);
-	if (bNavigationBeingBuilt && !bAsyncComplete) return;
+	if (bNavigationBeingBuilt || !bAsyncComplete) return;
 
 	GetWorld()->GetTimerManager().PauseTimer(NavCheckHandle);
 
@@ -95,28 +95,36 @@ void ASpawner::ReadyToSpawn()
 		// Switch Class After Pause
 		if (++IndexCounter >=SpawnTypes.Num())
 		{
-			IndexCounter = 0;
+			IndexCounter = -1;
 			bActorSwitch = false;
 		}
 		GetWorld()->GetTimerManager().UnPauseTimer(NavCheckHandle);
 	}
 	else // Spawn Instances
 	{
-		if (UInstancedStaticMeshComponent* StaticMeshComponent = Cast<UInstancedStaticMeshComponent>(AddComponent(FName("InstancedStaticMeshComponent"),false,FTransform(),this)))
+		// UActorComponent* ActorComponent = AddComponent(FName("NODE_AddInstancedStaticMeshComponent-3"),false,FTransform(),this);
+		// if (ActorComponent)
+		// {
+		// 	GEngine->AddOnScreenDebugMessage(-1,5.f,FColor::Red,TEXT("4134"));
+		// }
+		if (UInstancedStaticMeshComponent* StaticMeshComponent = Cast<UInstancedStaticMeshComponent>(AddComponent(FName("NODE_AddInstancedStaticMeshComponent-3"),false,FTransform(),this)))
 		{
+			IndexCounter++;
 			checkf(SpawnInstances[IndexCounter].ClassRef,TEXT("No StaticMesh"))
 			FSpawnInstance Instance = SpawnInstances[IndexCounter];
 			StaticMeshComponent->SetStaticMesh(Instance.ClassRef);
 			SpawnInst(StaticMeshComponent,Instance.BiomeScale,Instance.BiomeCount,Instance.SpawnPerBiome);
-			IndexCounter++;
-			if (++IndexCounter >=SpawnTypes.Num())
+			if (IndexCounter >= SpawnTypes.Num())
 			{
 				if (bCallSave)
 				{
 					FinishSpawning();
 				}
 			}
-			GetWorld()->GetTimerManager().UnPauseTimer(NavCheckHandle);
+			else
+			{
+				GetWorld()->GetTimerManager().UnPauseTimer(NavCheckHandle);
+			}
 		}
 		
 	}
@@ -171,7 +179,7 @@ FVector ASpawner::SteppedPosition(const FVector& InParam) const
 	return FVector(UKismetMathLibrary::Round(DivideVector.X) * Value,UKismetMathLibrary::Round(DivideVector.Y) * Value, 0.f );
 }
 
-void ASpawner::SpawnInst(UInstancedStaticMeshComponent* Class, float Radius, int32 BiomeCount, int32 MaxPawn)
+void ASpawner::SpawnInst(UInstancedStaticMeshComponent* Class, float Radius, int32 BiomeCount, int32 MaxSpawn)
 {
 	//Loop Of Initial Biome Points
 	int32 LocalCount = 0;
