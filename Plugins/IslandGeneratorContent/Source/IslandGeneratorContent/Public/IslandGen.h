@@ -24,7 +24,8 @@ protected:
 private:
 
 	void CreateIsland(bool SpawnMarkers);
-	
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite , meta=(AllowPrivateAccess =true))
 	FRandomStream Seed;
 
 	UPROPERTY()
