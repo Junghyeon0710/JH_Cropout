@@ -3,3 +3,46 @@
 
 #include "GameMode/JHGameMode.h"
 
+#include "Blueprint/UserWidget.h"
+#include "GameMode/JHBlueprintFunctionLibrary.h"
+#include "GameMode/JHGameInstance.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetRenderingLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Spawner/Spawner.h"
+#include "UI/Game/Layer_Game_ActivatableWidget.h"
+
+AJHGameMode::AJHGameMode()
+{
+	
+}
+
+void AJHGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+
+	//Set loading screen to animate out, reset render target (로딩 화면을 애니메이션으로 설정하고 렌더링 대상을 재설정합니다)
+	Cast<UJHGameInstance>(UJHBlueprintFunctionLibrary::GetJhGameInstance(this))->TransitionOut();
+
+	StartTime = UKismetSystemLibrary::GetGameTimeInSeconds(this);
+
+	check(RenderTarget2D);
+	UKismetRenderingLibrary::ClearRenderTarget2D(this,RenderTarget2D,FLinearColor::Black);
+
+	//Setup Island
+	GetSpawnRef();
+
+	// Add Game HUD to screen
+	checkf(Layer_Game_ActivatableWidgetClass,TEXT("No Layer_Game_ActivatableWidgetClass"))
+	UIHUD = CreateWidget<ULayer_Game_ActivatableWidget>(GetWorld(),Layer_Game_ActivatableWidgetClass);
+	UIHUD->AddToViewport();
+	UIHUD->ActivateWidget();
+}
+
+void AJHGameMode::GetSpawnRef()
+{
+	TArray<AActor*> Actors;
+	UGameplayStatics::GetAllActorsOfClass(this,ASpawner::StaticClass(),Actors);
+	SpawnerRef = Cast<ASpawner>(Actors[0]);
+}
+
