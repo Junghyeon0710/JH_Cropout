@@ -8,7 +8,9 @@
 
 #include "JHMainMenuGM.generated.h"
 
+class UMainMenuActivatableWidget;
 class USoundControlBus;
+class ULayer_Menu_ActivatableWidget;
 /**
  * 
  */
@@ -30,7 +32,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere,Category = Widget)
-	TSubclassOf<UCommonActivatableWidget> LayerMenuClass;
+	TSubclassOf<ULayer_Menu_ActivatableWidget> LayerMenuClass;
 
 	UPROPERTY(EditAnywhere,Category = Widget)
 	TObjectPtr<UCommonActivatableWidget> testMenuClass;

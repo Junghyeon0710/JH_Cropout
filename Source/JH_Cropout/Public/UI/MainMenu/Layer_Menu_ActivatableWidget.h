@@ -15,11 +15,12 @@ UCLASS()
 class JH_CROPOUT_API ULayer_Menu_ActivatableWidget : public UCommonActivatableWidget
 {
 	GENERATED_BODY()
-
+public:
+	void OnActivate();
 protected:
 
 	virtual void NativeOnActivated() override;
-
+	
 	void AddStackItem(const TSubclassOf<UCommonActivatableWidget>& InActivatableWidgetClass);
 	
 	UPROPERTY(meta = (BindWidget) , BlueprintReadOnly)

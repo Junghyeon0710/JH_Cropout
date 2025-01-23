@@ -12,7 +12,9 @@
 #include "Interfaces/OnlineIdentityInterface.h"
 #include "OnlineSubsystemTypes.h"
 #include "AudioModulationStatics.h"
-
+#include "UI/Game/Layer_Game_ActivatableWidget.h"
+#include "UI/MainMenu/Layer_Menu_ActivatableWidget.h"
+#include "UI/MainMenu/MainMenuActivatableWidget.h"
 
 
 AJHMainMenuGM::AJHMainMenuGM()
@@ -32,9 +34,10 @@ void AJHMainMenuGM::BeginPlay()
 	checkf(LayerMenuClass,TEXT("No LayerMenuClass"));
 
 	
-	UCommonActivatableWidget*  LayerMenu = CreateWidget<UCommonActivatableWidget>(UGameplayStatics::GetPlayerController(GetWorld(),0),LayerMenuClass);
+	ULayer_Menu_ActivatableWidget*  LayerMenu = CreateWidget<ULayer_Menu_ActivatableWidget>(UGameplayStatics::GetPlayerController(this,0),LayerMenuClass);
 	LayerMenu->AddToViewport();
-	LayerMenu->ActivateWidget();
+	LayerMenu->OnActivate();
+	 //LayerMenu->ActivateWidget(); //마우스 인풋이 안먹는 버그 있음,,;
 	
 	if (const UJHGameInstance* GameInstance =  Cast<UJHGameInstance>(UGameplayStatics::GetGameInstance(this)))
 	{
