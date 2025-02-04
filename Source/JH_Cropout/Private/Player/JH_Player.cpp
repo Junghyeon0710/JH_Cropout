@@ -151,11 +151,30 @@ void AJH_Player::UpdateCursorPosition()
 	
 }
 
-const FEdgeMoveVector& AJH_Player::EdgeMove()
+FEdgeMoveVector AJH_Player::EdgeMove()
 {
 	FEdgeMoveVector MoveVector;
-	
+	MoveVector.Direction = FVector::ZeroVector;
 	return MoveVector;
+}
+
+void AJH_Player::ProjcetMouseTouchToGroundPlane(FVector2d& ScreenPos, FVector& Intersection, bool& ReturnValue)
+{
+	// Lock Projection to center screen
+	int32 SizeX;
+	int32 SizeY;
+	GetPlayerController()->GetViewportSize(SizeX,SizeY);
+	FVector2D ViewPortSize = FVector2D(SizeX,SizeY)/2;
+
+	//Get Mouse Viewport position
+	float LocationX;
+	float LocationY;
+	bool bMousePosition = GetPlayerController()->GetMousePosition(LocationX,LocationY);
+}
+
+APlayerController* AJH_Player::GetPlayerController() const
+{
+	return Cast<APlayerController>(GetController());
 }
 
 void AJH_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

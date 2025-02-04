@@ -42,7 +42,9 @@ public:
 	void Dof();
 	void MoveTracking();
 	void UpdateCursorPosition();
-	const FEdgeMoveVector& EdgeMove();
+	FEdgeMoveVector EdgeMove();
+	void ProjcetMouseTouchToGroundPlane(FVector2d& ScreenPos, FVector& Intersection,bool& ReturnValue);
+	APlayerController* GetPlayerController() const;
 	
 protected:
 	virtual void BeginPlay() override;
