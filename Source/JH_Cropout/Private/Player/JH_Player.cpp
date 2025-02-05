@@ -170,6 +170,82 @@ void AJH_Player::ProjcetMouseTouchToGroundPlane(FVector2d& ScreenPos, FVector& I
 	float LocationX;
 	float LocationY;
 	bool bMousePosition = GetPlayerController()->GetMousePosition(LocationX,LocationY);
+	FVector2D MouseSize = FVector2D(LocationX,LocationY);
+
+	// Get Touch if touch event detected
+	float TouchLocationX;
+	float TouchLocationY;
+	bool bIsCurrentlyPressed;
+	GetPlayerController()->GetInputTouchState(ETouchIndex::Touch1,TouchLocationX,TouchLocationY,bIsCurrentlyPressed);
+	FVector2D TouchSize = FVector2D(TouchLocationX,TouchLocationY);
+
+	//Select based on input
+	FVector2D GamePadSize = ViewPortSize /2;
+	FVector2D KeyMouseSize;
+	if(bMousePosition)
+	{
+		KeyMouseSize = MouseSize;
+	}
+	else
+	{
+		KeyMouseSize = GamePadSize;
+	}
+	FVector2D Touch;
+	if(bIsCurrentlyPressed)
+	{
+		Touch = TouchSize;
+	}
+	else
+	{
+		Touch = GamePadSize;
+	}
+
+	FVector2D SelectInputPosition;
+	if(InputType == EInputType::Unknown || InputType == EInputType::Gamepad)
+	{
+		SelectInputPosition = GamePadSize;
+	}
+	else if(InputType == EInputType::KeyMouse)
+	{
+		SelectInputPosition = KeyMouseSize;
+	}
+	else if(InputType == EInputType::Touch)
+	{
+		SelectInputPosition = Touch;
+	}
+
+	// Project Screen Position to Game Plane
+	FVector WorldPosition;
+	FVector WorldDirection;
+	UGameplayStatics::DeprojectScreenToWorld(GetPlayerController(),SelectInputPosition,WorldPosition,WorldDirection);
+
+	GEngine->AddOnScreenDebugMessage(-1,5.f,FColor::Red,FString::Printf(TEXT("%s"),*WorldDirection.ToString()));
+	float T;
+	FVector Intersection;
+	UKismetMathLibrary::LinePlaneIntersection(WorldPosition,WorldPosition + WorldDirection *100000.0 ,
+		UKismetMathLibrary::MakePlaneFromPointAndNormal(FVector(),FVector(0,0,1)),T,Intersection);
+
+	float LX;
+	float LY;
+	bool bTouchPressed;
+	GetPlayerController()->GetInputTouchState(ETouchIndex::Touch1,LX,LY,bTouchPressed);
+	float TouchValue = 0;
+	if(bTouchPressed)
+	{
+		TouchValue = -500;
+	}
+
+	if(InputType == EInputType::Touch)
+	{
+		Intersection.Z + TouchValue;
+	}
+
+	bool bReturnValue;
+	if(InputType == EInputType::Unknown)
+	{
+		bReturnValue = false;
+	}
+	
 }
 
 APlayerController* AJH_Player::GetPlayerController() const
