@@ -25,4 +25,5 @@ class JH_CROPOUT_API IResourceInterface
 public:
 
 	virtual void AddResource(EResourceType Resource, int32 Value);
+	virtual bool CheckResource(EResourceType Resource, int32& OutValue);
 };

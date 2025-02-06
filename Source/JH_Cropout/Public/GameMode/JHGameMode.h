@@ -3,19 +3,22 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ResourceInterface.h"
 #include "GameFramework/GameModeBase.h"
+#include "ResourcesTypes/ResourcesTypes.h"
 #include "JHGameMode.generated.h"
 
 /**
  * 
  */
 DECLARE_DELEGATE_OneParam(FUpdateVillagers,int32 VillagerCount);
+DECLARE_DELEGATE_TwoParams(FUpdateResources,EResourceType Resource, int32 /*NewValue */ );
 
 class ULayer_Game_ActivatableWidget;
 class ASpawner;
 class UTextureRenderTarget2D;
 UCLASS()
-class JH_CROPOUT_API AJHGameMode : public AGameModeBase
+class JH_CROPOUT_API AJHGameMode : public AGameModeBase , public IResourceInterface
 {
 	GENERATED_BODY()
 public:
@@ -23,9 +26,13 @@ public:
 
 	void GetSpawnRef();
 
+	/** IResourceInterface */
+	virtual void AddResource(EResourceType Resource, int32 Value) override;
+	virtual bool CheckResource(EResourceType Resource, int32& OutValue) override;
+	/** ~IResourceInterface   */
 
 	FUpdateVillagers OnUpdateVillagers;
-	
+	FUpdateResources OnUpdateResources;
 protected:
 	virtual void BeginPlay() override;
 
@@ -44,4 +51,7 @@ private:
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly ,meta=(AllowPrivateAccess = true))
 	TObjectPtr<ULayer_Game_ActivatableWidget> UIHUD;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly ,meta=(AllowPrivateAccess = true))
+	TMap<EResourceType,int32> Resources;
 };

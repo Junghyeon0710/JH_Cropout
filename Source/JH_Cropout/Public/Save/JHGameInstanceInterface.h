@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ResourcesTypes/ResourcesTypes.h"
 #include "UObject/Interface.h"
 #include "JHGameInstanceInterface.generated.h"
 
@@ -26,4 +27,5 @@ public:
 	virtual void ClearSave(bool ClearSeed) = 0;
 	virtual void SaveGame() = 0;
 	virtual void UpdateAllInteractables() = 0 ;
+	virtual void UpdateAllResources(TMap<EResourceType,int32> NewParam) = 0 ;
 };

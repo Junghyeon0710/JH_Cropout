@@ -22,10 +22,19 @@ public:
 
 protected:
 	virtual void NativePreConstruct() override;
+	virtual void NativeConstruct() override;
+	virtual void NativeOnInitialized() override;
 
+	void UpdateValue(EResourceType Resource,int32 NewValue);
+	
 	UPROPERTY(meta=(BindWidget),EditDefaultsOnly,BlueprintReadWrite)
 	TObjectPtr<UImage> Image_24;
 
+	UPROPERTY(Transient,meta=(BindWidgetAnim),EditDefaultsOnly,BlueprintReadWrite)
+	TObjectPtr<UWidgetAnimation> Reduce;
+
+	UPROPERTY(Transient,meta=(BindWidgetAnim),EditDefaultsOnly,BlueprintReadWrite)
+	TObjectPtr<UWidgetAnimation> Increase;
 	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
 	TSoftObjectPtr<UTexture2D> NoneTexture;
@@ -38,4 +47,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
 	TSoftObjectPtr<UTexture2D> StoneTexture;
+
+	UPROPERTY(BlueprintReadWrite)
+	int32 Value;
 };

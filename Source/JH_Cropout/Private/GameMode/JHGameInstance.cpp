@@ -70,6 +70,19 @@ void UJHGameInstance::UpdateAllInteractables()
 	}
 }
 
+void UJHGameInstance::UpdateAllResources(TMap<EResourceType, int32> NewParam)
+{
+	//Update Resources. Expect this to trigger quite a bit. By adding a delay we can limit the number of times save is actually called.
+
+	SaveGameRef->Resources = NewParam;
+
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateWeakLambda(this,[this]()
+	{
+		SaveGame();
+	}), 5.0f, false);
+}	
+
 void UJHGameInstance::SpawningComplete()
 {
 }

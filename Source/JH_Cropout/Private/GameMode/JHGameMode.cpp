@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "GameMode/JHBlueprintFunctionLibrary.h"
 #include "GameMode/JHGameInstance.h"
+#include "Kismet/BlueprintMapLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetRenderingLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -44,5 +45,26 @@ void AJHGameMode::GetSpawnRef()
 	TArray<AActor*> Actors;
 	UGameplayStatics::GetAllActorsOfClass(this,ASpawner::StaticClass(),Actors);
 	SpawnerRef = Cast<ASpawner>(Actors[0]);
+}
+
+void AJHGameMode::AddResource(EResourceType Resource, int32 Value)
+{
+	const int32* FoundValue = Resources.Find(Resource);
+	Resources.Add(Resource, *FoundValue + Value);
+
+	OnUpdateResources.Execute(Resource,*FoundValue);
+
+	if(IJHGameInstanceInterface* JIF = Cast<IJHGameInstanceInterface>(UGameplayStatics::GetGameInstance(this)))
+	{
+		JIF->UpdateAllResources(Resources);
+	}
+	
+}
+
+bool AJHGameMode::CheckResource(EResourceType Resource, int32& OutValue)
+{
+	OutValue = *Resources.Find(Resource);
+	return Resources.Contains(Resource);
+	
 }
 

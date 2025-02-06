@@ -32,7 +32,7 @@ public:
 	virtual void ClearSave(bool ClearSeed) override;
 	virtual void SaveGame() override;
 	virtual void UpdateAllInteractables() override;
-
+	virtual void UpdateAllResources(TMap<EResourceType, int32> NewParam) override;
 	/** ~IJHGameInstanceInterface */
 
 	/** IIslandInterface */

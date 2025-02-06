@@ -22,7 +22,7 @@ public:
 	FRandomStream Seed;
 
 	UPROPERTY()
-	TMap<EResourceType,int64> Resources;
+	TMap<EResourceType,int32> Resources;
 
 	UPROPERTY()
 	TArray<FSaveInteract> Interactables;
