@@ -44,6 +44,9 @@ public:
 	void OpenLevel(const TSoftObjectPtr<UWorld>& Level) const;
 
 	void PlayMusic(USoundBase* Audio,const float Volume,const bool Persist);
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	TArray<float> SoundMixes;
 protected:
 
 	virtual void Init() override;

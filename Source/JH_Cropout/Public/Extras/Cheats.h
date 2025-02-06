@@ -10,7 +10,7 @@
 class UInputAction;
 class UInputMappingContext;
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) ,Blueprintable)
 class JH_CROPOUT_API UCheats : public UActorComponent
 {
 	GENERATED_BODY()

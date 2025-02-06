@@ -48,6 +48,7 @@ protected:
 	void InputActionTouchDetect(const FInputActionInstance& ActionInstance);
 
 	EInputType InputType;
+public:
 	FOnCallKeySwitch OnCallKeySwitch;
 };
 

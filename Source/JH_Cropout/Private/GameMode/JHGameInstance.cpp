@@ -22,6 +22,9 @@ void UJHGameInstance::Init()
 
 	//Load Game
 	LoadGame();
+
+	SoundMixes.Add(1);
+	SoundMixes.Add(1);
 }
 
 void UJHGameInstance::LoadGame()

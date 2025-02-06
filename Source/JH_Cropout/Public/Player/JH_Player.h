@@ -43,8 +43,17 @@ public:
 	void MoveTracking();
 	void UpdateCursorPosition();
 	FEdgeMoveVector EdgeMove();
-	void ProjcetMouseTouchToGroundPlane(FVector2d& ScreenPos, FVector& Intersection,bool& ReturnValue);
+
+	/** 
+	 * 화면에서 입력한 위치를 월드 공간의 평면으로 변환하는 기능
+	 * @param OutScreenPos	선택된 입력 좌표 (스크린 좌표)
+	 * @param OutIntersection 평면과의 교차점 (월드 좌표)
+	 * @param OutReturnValue	입력이 유효한지 여부 반환
+	 */
+	void ProjectMouseTouchToGroundPlane(FVector2D& OutScreenPos, FVector& OutIntersection,bool& OutReturnValue);
+	
 	APlayerController* GetPlayerController() const;
+	void CursorDistFromViewportCenter(const FVector2D& CursorPosition,FVector& OutDirection, float& OutStrength);
 	
 protected:
 	virtual void BeginPlay() override;
@@ -82,6 +91,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
 	TObjectPtr<AActor> HoverActor;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	float EdgeMoveDistance = 50.f;
 public:	
 
 

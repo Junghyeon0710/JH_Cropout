@@ -7,6 +7,7 @@
 #include "ResourcesTypes/ResourcesTypes.h"
 #include "ResourceWidget.generated.h"
 
+class UImage;
 /**
  * 
  */
@@ -18,4 +19,23 @@ class JH_CROPOUT_API UResourceWidget : public UUserWidget
 public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	EResourceType ResourceType;
+
+protected:
+	virtual void NativePreConstruct() override;
+
+	UPROPERTY(meta=(BindWidget),EditDefaultsOnly,BlueprintReadWrite)
+	TObjectPtr<UImage> Image_24;
+
+	
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
+	TSoftObjectPtr<UTexture2D> NoneTexture;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
+	TSoftObjectPtr<UTexture2D> FoodTexture;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
+	TSoftObjectPtr<UTexture2D> WoodTexture;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
+	TSoftObjectPtr<UTexture2D> StoneTexture;
 };
