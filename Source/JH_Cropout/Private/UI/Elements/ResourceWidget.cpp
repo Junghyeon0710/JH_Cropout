@@ -3,7 +3,6 @@
 
 #include "UI/Elements/ResourceWidget.h"
 
-#include "Animation/WidgetAnimation.h"
 #include "Components/Image.h"
 #include "GameMode/ResourceInterface.h"
 #include "Kismet/GameplayStatics.h"

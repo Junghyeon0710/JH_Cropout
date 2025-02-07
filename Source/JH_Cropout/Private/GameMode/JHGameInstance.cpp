@@ -176,3 +176,9 @@ void UJHGameInstance::PlayMusic(USoundBase* Audio, const float Volume, const boo
 	AudioComponent->Play(0.f);
 	bMusicPlaying = true;
 }
+
+void UJHGameInstance::StopMusic()
+{
+	bMusicPlaying = false;
+	UAudioModulationStatics::SetGlobalBusMixValue(this,Cropout_Music_Piano,1.f,0.f);
+}

@@ -63,7 +63,12 @@ void AJHGameMode::AddResource(EResourceType Resource, int32 Value)
 
 bool AJHGameMode::CheckResource(EResourceType Resource, int32& OutValue)
 {
-	OutValue = *Resources.Find(Resource);
+	if (Resources.Contains(Resource))
+	{
+		OutValue = *Resources.Find(Resource);  // 이제 안전하게 역참조 가능
+		return true;
+	}
+	OutValue = 0;
 	return Resources.Contains(Resource);
 	
 }

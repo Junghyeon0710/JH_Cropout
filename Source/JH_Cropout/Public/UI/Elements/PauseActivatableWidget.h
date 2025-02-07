@@ -6,6 +6,7 @@
 #include "CommonActivatableWidget.h"
 #include "PauseActivatableWidget.generated.h"
 
+class USliderWidget;
 class UJHCommonButtonBase;
 /**
  * 
@@ -15,7 +16,7 @@ class JH_CROPOUT_API UPauseActivatableWidget : public UCommonActivatableWidget
 {
 	GENERATED_BODY()
 protected:
-	virtual void NativeOnInitialized() override;
+	virtual void NativeOnActivated() override;
 
 private:
 
@@ -28,5 +29,16 @@ private:
 	UPROPERTY(meta=(BindWidget) ,EditAnywhere,BlueprintReadWrite, meta=(AllowPrivateAccess= ture))
 	TObjectPtr<UJHCommonButtonBase> BTN_MainMenu;
 
+	UPROPERTY(meta=(BindWidget) ,EditAnywhere,BlueprintReadWrite, meta=(AllowPrivateAccess= ture))
+	TObjectPtr<USliderWidget> Slider_Music;
+
+	UPROPERTY(meta=(BindWidget) ,EditAnywhere,BlueprintReadWrite, meta=(AllowPrivateAccess= ture))
+	TObjectPtr<USliderWidget> Slider_SFX;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, meta=(AllowPrivateAccess= ture))
+	TSoftObjectPtr<UWorld> MainMenuLevel;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, meta=(AllowPrivateAccess= ture))
+	TSoftObjectPtr<UWorld> VillageLevel;
 	
 };

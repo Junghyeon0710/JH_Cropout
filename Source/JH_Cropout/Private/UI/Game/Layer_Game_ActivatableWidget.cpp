@@ -32,7 +32,7 @@ void ULayer_Game_ActivatableWidget::NativeOnInitialized()
 	TimerDelegate.BindWeakLambda(this,[this,&TimerHandle]()
 	{
 		FString ResourceString = UEnum::GetValueAsString(Resources);
-		if (ResourceString == "E_MAX" || ResourceString == "E MAX")
+		if (ResourceString == "EResourceType::EResourceType_MAX" || ResourceString == "EResourceType::EResourceType MAX")
 		{
 			GetWorld()->GetTimerManager().PauseTimer(TimerHandle);
 		}

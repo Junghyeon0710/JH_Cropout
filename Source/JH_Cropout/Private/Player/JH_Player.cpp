@@ -12,6 +12,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/JHPlayerController.h"
 
 
 AJH_Player::AJH_Player()
@@ -43,7 +44,8 @@ void AJH_Player::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	
+	Cast<AJHPlayerController>(NewController)->OnCallKeySwitch.BindUObject(this,&ThisClass::InputSwitch);
+
 }
 
 void AJH_Player::BeginPlay()
@@ -52,6 +54,15 @@ void AJH_Player::BeginPlay()
 
 	//On Begin Play start bound check
 	UpdateZoom();
+
+	FTimerHandle MoveRackingTimer;
+
+	GetWorld()->GetTimerManager().SetTimer(MoveRackingTimer,FTimerDelegate::CreateLambda([this]()
+	{
+		MoveTracking();
+	}),0.016667,true);
+
+	//
 	
 }
 
@@ -70,8 +81,8 @@ void AJH_Player::UpdateZoom()
 
 	const float Alpha = ZoomCurve->GetFloatValue(ZoomValue);
 
-	SpringArm->TargetArmLength =  FMath::Lerp(800.f,40000.f,Alpha);
-	SpringArm->SetRelativeRotation(FRotator(0.f,FMath::Lerp(-40.f,-55.f,Alpha),0.f));
+	SpringArm->TargetArmLength =  FMath::Lerp(800.f,40000.0f,Alpha);
+	SpringArm->SetRelativeRotation(FRotator(FMath::Lerp(-40.f,-55.f,Alpha),0.f,0.f));
 
 	FloatingPawnMovement->MaxSpeed =  FMath::Lerp(1000.f,6000.f,Alpha);
 	Dof();
@@ -180,6 +191,11 @@ void AJH_Player::UpdateCursorPosition()
 	Cursor->SetWorldTransform(InterTransform);
 
 	
+}
+
+void AJH_Player::InputSwitch(EInputType NewInput)
+{
+	InputType = NewInput;
 }
 
 FEdgeMoveVector AJH_Player::EdgeMove()

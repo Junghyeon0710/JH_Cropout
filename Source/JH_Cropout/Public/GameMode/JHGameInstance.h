@@ -44,6 +44,7 @@ public:
 	void OpenLevel(const TSoftObjectPtr<UWorld>& Level) const;
 
 	void PlayMusic(USoundBase* Audio,const float Volume,const bool Persist);
+	void StopMusic();
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	TArray<float> SoundMixes;
@@ -84,6 +85,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<USoundControlBus> Cropout_Music_Stop;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<USoundControlBus> Cropout_Music_Piano;
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UAudioComponent> AudioComponent;

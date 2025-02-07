@@ -42,6 +42,7 @@ public:
 	void Dof();
 	void MoveTracking();
 	void UpdateCursorPosition();
+	void InputSwitch(EInputType NewInput);
 	FEdgeMoveVector EdgeMove();
 
 	/** 
@@ -79,7 +80,7 @@ protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
 	TObjectPtr<UFloatingPawnMovement> FloatingPawnMovement;
 	
-	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
 	TObjectPtr<UCurveFloat> ZoomCurve;
 
 
@@ -102,6 +103,6 @@ public:
 private:
 
 	
-	float ZoomDirection;
+	float ZoomDirection = 0.f;
 	float ZoomValue = .5f;
 };
