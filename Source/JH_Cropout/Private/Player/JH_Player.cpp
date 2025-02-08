@@ -3,6 +3,8 @@
 
 #include "Player/JH_Player.h"
 
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 #include "Camera/CameraComponent.h"
 #include "Components/SphereComponent.h"
 #include "Extras/Cheats.h"
@@ -13,7 +15,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/JHPlayerController.h"
-
+#include "NiagaraFunctionLibrary.h"
 
 AJH_Player::AJH_Player()
 {
@@ -44,7 +46,7 @@ void AJH_Player::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	Cast<AJHPlayerController>(NewController)->OnCallKeySwitch.BindUObject(this,&ThisClass::InputSwitch);
+	Cast<AJHPlayerController>(NewController)->OnCallKeySwitch.AddUObject(this,&ThisClass::InputSwitch);
 
 }
 
@@ -57,12 +59,17 @@ void AJH_Player::BeginPlay()
 
 	FTimerHandle MoveRackingTimer;
 
-	GetWorld()->GetTimerManager().SetTimer(MoveRackingTimer,FTimerDelegate::CreateLambda([this]()
+	GetWorld()->GetTimerManager().SetTimer(MoveRackingTimer,FTimerDelegate::CreateWeakLambda(this,[this]()
 	{
 		MoveTracking();
 	}),0.016667,true);
 
 	//
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetPlayerController()->GetLocalPlayer()))
+	{
+		Subsystem->AddMappingContext(BaseInput, 0);
+		Subsystem->AddMappingContext(VillagerMode, 0);
+	}
 	
 }
 
@@ -106,43 +113,50 @@ void AJH_Player::MoveTracking()
 	Location.Z = 0;
 	const float Size = FMath::Max((GetActorLocation().Size() - 9000.f) /5000.f,0);
 	AddMovementInput(Location*-1.f,Size);
+
+
+	//Syncs 3D Cursor and Collision Position
+	UpdateCursorPosition();
 	
 	//Edge Of Screen Movement
-	AddMovementInput(EdgeMove().Direction,EdgeMove().Strength);
+	const auto [Direction, Strength] = EdgeMove();
+	AddMovementInput(Direction, Strength);
+
 
 	//Position Collision On Ground Plane Projection
-	const FVector CollisionWorldLocation = Collision->GetComponentToWorld().GetLocation();
-	FVector InterpVector =  FMath::VInterpTo(CollisionWorldLocation,
-		FVector(CollisionWorldLocation.X,CollisionWorldLocation.Y,-500)
-		,UGameplayStatics::GetWorldDeltaSeconds(this),
-		12.f );
+	// const FVector CollisionWorldLocation = Collision->GetComponentToWorld().GetLocation();
+	// FVector InterpVector =  FMath::VInterpTo(CollisionWorldLocation,
+	// 	FVector(CollisionWorldLocation.X,CollisionWorldLocation.Y,-500)
+	// 	,UGameplayStatics::GetWorldDeltaSeconds(this),
+	// 	12.f );
 
 	FVector2D ScreenPos;
 	FVector Intersection;
 	bool bIsInputPressed;
 	ProjectMouseTouchToGroundPlane(ScreenPos,Intersection,bIsInputPressed);
+	Intersection.Z +=10;
+	// FVector TouchVector = Intersection;
+	// if (!bIsInputPressed)
+	// {
+	// 	TouchVector = InterpVector;
+	// }
+	//
+	// FVector CollisionPosition;
+	// if (InputType == EInputType::Touch)
+	// {
+	// 	CollisionPosition = TouchVector;
+	// }
+	// else
+	// {
+	// 	InterpVector.Z += 10;
+	// 	CollisionPosition = InterpVector;
+	// }
 
-	FVector TouchVector = Intersection;
-	if (!bIsInputPressed)
-	{
-		TouchVector = InterpVector;
-	}
+	Collision->SetWorldLocation(Intersection);
 
-	FVector CollisionPosition;
-	if (InputType == EInputType::Touch)
-	{
-		CollisionPosition = TouchVector;
-	}
-	else
-	{
-		InterpVector.Z += 10;
-		CollisionPosition = InterpVector;
-	}
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Intersection: %s"), *Intersection.ToString()));
 
-	Collision->SetWorldLocation(CollisionPosition);
 
-	//Syncs 3D Cursor and Collision Position
-	UpdateCursorPosition();
 }
 
 void AJH_Player::UpdateCursorPosition()
@@ -196,6 +210,22 @@ void AJH_Player::UpdateCursorPosition()
 void AJH_Player::InputSwitch(EInputType NewInput)
 {
 	InputType = NewInput;
+
+	//Get new Input Type
+	if(InputType == EInputType::KeyMouse)
+	{
+		Cursor->SetHiddenInGame(false);
+	}
+	else if(InputType == EInputType::Gamepad)
+	{
+		Collision->SetRelativeLocation(FVector(0.f,0.f,10.f));
+	}
+	else if(InputType == EInputType::Touch) //If Touch, we only want to use the cursor when it's being pressed
+	{
+		Cursor->SetHiddenInGame(true);
+		Collision->SetRelativeLocation(FVector(0.f,0.f,-500.0f));
+	}
+	
 }
 
 FEdgeMoveVector AJH_Player::EdgeMove()
@@ -241,6 +271,8 @@ void AJH_Player::ProjectMouseTouchToGroundPlane(FVector2D& OutScreenPos, FVector
 	bool bMousePosition = GetPlayerController()->GetMousePosition(LocationX, LocationY);
 	FVector2D MouseSize = FVector2D(LocationX, LocationY); // 마우스 위치
 
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("MouseSize: %s"), *MouseSize.ToString()));
+
 	//  3. 터치 입력 상태 가져오기
 	float TouchLocationX, TouchLocationY;
 	bool bIsCurrentlyPressed;
@@ -271,8 +303,6 @@ void AJH_Player::ProjectMouseTouchToGroundPlane(FVector2D& OutScreenPos, FVector
 	FVector WorldPosition, WorldDirection;
 	UGameplayStatics::DeprojectScreenToWorld(GetPlayerController(), SelectInputPosition, WorldPosition, WorldDirection);
 
-	// Debug: 월드 방향 벡터 출력
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("WorldDirection: %s"), *WorldDirection.ToString()));
 
 	//  7. 평면과 레이 교차 검사
 	float T;
@@ -280,7 +310,7 @@ void AJH_Player::ProjectMouseTouchToGroundPlane(FVector2D& OutScreenPos, FVector
 	UKismetMathLibrary::LinePlaneIntersection(
 		WorldPosition, 
 		WorldPosition + WorldDirection * 100000.0f, 
-		UKismetMathLibrary::MakePlaneFromPointAndNormal(FVector(), FVector(0, 0, 1)), 
+		UKismetMathLibrary::MakePlaneFromPointAndNormal(FVector::ZeroVector, FVector(0, 0, 1)), 
 		T, 
 		Intersection
 	);
@@ -289,7 +319,7 @@ void AJH_Player::ProjectMouseTouchToGroundPlane(FVector2D& OutScreenPos, FVector
 	float LX, LY;
 	bool bTouchPressed;
 	GetPlayerController()->GetInputTouchState(ETouchIndex::Touch1, LX, LY, bTouchPressed);
-	float TouchValue = bTouchPressed ? -500.0f : 0.0f;
+	float TouchValue = bTouchPressed ? 0.0f  : -500.0f;
 
 	// 터치 입력이면 Z 좌표 조정
 	if (InputType == EInputType::Touch)
@@ -374,5 +404,96 @@ void AJH_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
+	{
+		// VillagerInputAction
+		EnhancedInputComponent->BindAction(VillagerInputAction,ETriggerEvent::Triggered,this,&AJH_Player::VillagerActionTriggered);
+		EnhancedInputComponent->BindAction(VillagerInputAction,ETriggerEvent::Started,this,&AJH_Player::VillagerActionStart);
+
+	}
 }
 
+void AJH_Player::VillagerActionTriggered()
+{
+	VillagerAction = HoverActor;
+}
+
+void AJH_Player::VillagerActionStart()
+{
+	//Check if multiple touch points and store current position if not.
+	if(SingleTouchCheck())
+	{
+		PositionCheck();
+		AActor* Actor;
+		if(VillagerOverlapCheck(Actor))
+		{
+			
+		}
+		else
+		{
+			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetPlayerController()->GetLocalPlayer()))
+			{
+				checkf(DragMode,TEXT("No DragMode"));
+				Subsystem->AddMappingContext(DragMode,0);
+			}
+		}
+	}
+}
+
+bool AJH_Player::SingleTouchCheck() const
+{
+	float LocationX;
+	float LocationY;
+	bool bIsCurrentlyPressed;
+	GetPlayerController()->GetInputTouchState(ETouchIndex::Touch2,LocationX,LocationY,bIsCurrentlyPressed);
+
+	return !bIsCurrentlyPressed;
+}
+
+void AJH_Player::PositionCheck()
+{
+	if(InputType != EInputType::Touch)
+	{
+		return;
+	}
+		
+	FVector2D ScreenPos;
+	FVector Intersection;
+	bool bReturnValue;
+	ProjectMouseTouchToGroundPlane(ScreenPos,Intersection,bReturnValue);
+	Collision->SetWorldLocation(TargetHandle);
+	
+}
+
+bool AJH_Player::VillagerOverlapCheck(AActor*& OverlapActor) const
+{
+	TArray<AActor*> OverlapActors;
+	GetOverlappingActors(OverlapActors,APawn::StaticClass());
+
+	if(OverlapActors.Num() > 0)
+	{
+		OverlapActor = OverlapActors[0];
+		return true;
+	}
+	
+	OverlapActor = nullptr;
+	return false;
+}
+
+
+void AJH_Player::VillagerSelect(AActor* InSelected)
+{
+	Selected = InSelected;
+
+	NSPath = UNiagaraFunctionLibrary::SpawnSystemAttached(
+		NS_Target,
+		RootComponent,
+		TEXT("None"),
+		FVector::ZeroVector,
+		FRotator::ZeroRotator,
+		EAttachLocation::SnapToTarget,
+		false);
+
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle,)
+}

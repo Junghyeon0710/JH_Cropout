@@ -24,7 +24,8 @@ public class JH_Cropout : ModuleRules
 			"OnlineSubsystemUtils",
 			"AudioModulation",
 			"GameplayCameras",
-			"IslandGeneratorContent"
+			"IslandGeneratorContent",
+			"Niagara"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

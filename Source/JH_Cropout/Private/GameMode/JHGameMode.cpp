@@ -37,7 +37,7 @@ void AJHGameMode::BeginPlay()
 	checkf(Layer_Game_ActivatableWidgetClass,TEXT("No Layer_Game_ActivatableWidgetClass"))
 	UIHUD = CreateWidget<ULayer_Game_ActivatableWidget>(GetWorld(),Layer_Game_ActivatableWidgetClass);
 	UIHUD->AddToViewport();
-	UIHUD->ActivateWidget();
+	//UIHUD->ActivateWidget();
 }
 
 void AJHGameMode::GetSpawnRef()

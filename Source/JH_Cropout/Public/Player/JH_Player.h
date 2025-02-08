@@ -7,6 +7,10 @@
 #include "Input/InputType.h"
 #include "JH_Player.generated.h"
 
+class UNiagaraComponent;
+class UNiagaraSystem;
+class UInputAction;
+class UInputMappingContext;
 class UCheats;
 class UFloatingPawnMovement;
 class USphereComponent;
@@ -55,6 +59,7 @@ public:
 	
 	APlayerController* GetPlayerController() const;
 	void CursorDistFromViewportCenter(const FVector2D& CursorPosition,FVector& OutDirection, float& OutStrength);
+
 	
 protected:
 	virtual void BeginPlay() override;
@@ -83,7 +88,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
 	TObjectPtr<UCurveFloat> ZoomCurve;
 
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
+	TObjectPtr<UNiagaraSystem> NS_Target;
 
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
+	TObjectPtr<UNiagaraComponent> NSPath;
+	
 	UPROPERTY(BlueprintReadOnly)
 	FPostProcessSettings PostProcessSettings;
 
@@ -93,16 +103,53 @@ protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
 	TObjectPtr<AActor> HoverActor;
 
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
+	TObjectPtr<AActor> VillagerAction;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
+	TObjectPtr<AActor> Selected;
+
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	float EdgeMoveDistance = 50.f;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	FVector TargetHandle;
+	
+	/* Input*/
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite , Category = Input)
+	TObjectPtr<UInputMappingContext> BaseInput;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite , Category = Input)
+	TObjectPtr<UInputMappingContext> VillagerMode;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite , Category = Input)
+	TObjectPtr<UInputMappingContext> DragMode;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite , Category = Input)
+	TObjectPtr<UInputAction> VillagerInputAction;
+
+	/* ~Input*/
+	
+	/* Input Binding Fuction*/
+	void VillagerActionTriggered();
+	void VillagerActionStart();
+	
 public:	
 
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+
+	void PositionCheck();
+	void VillagerSelect(AActor* InSelected);
+	
 private:
 
+	bool SingleTouchCheck() const;
+	bool VillagerOverlapCheck(AActor*& OverlapActor) const;
 	
 	float ZoomDirection = 0.f;
 	float ZoomValue = .5f;
+
+	
 };

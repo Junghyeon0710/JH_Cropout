@@ -14,7 +14,7 @@
  * 
  */
 
-DECLARE_DELEGATE_OneParam(FOnCallKeySwitch,EInputType NewInput)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnCallKeySwitch,EInputType NewInput)
 
 struct FInputActionInstance;
 struct FInputActionValue;
@@ -41,7 +41,7 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UInputAction> TouchDetect;
-
+	
 	
 	void InputActionKeyDetect(const FInputActionInstance& ActionInstance);
 	void InputAxisMouseMove(const FInputActionValue& Value);

@@ -18,6 +18,8 @@ UCLASS()
 class JH_CROPOUT_API UMainMenuActivatableWidget : public UCommonActivatableWidget
 {
 	GENERATED_BODY()
+public:
+	void OnActivate();
 protected:
 	virtual void NativeOnActivated() override;
 
@@ -45,6 +47,8 @@ protected:
 	void ConfirmNewGame() const;
 	void ConfirmQuit() const;
 	void ConfirmDonate() const;
+
+	
  public:
 	UPROPERTY(BlueprintReadOnly)
 	TWeakObjectPtr<UCommonActivatableWidgetStack> StackRef;

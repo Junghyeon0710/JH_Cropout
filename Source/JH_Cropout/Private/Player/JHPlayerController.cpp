@@ -40,7 +40,7 @@ void AJHPlayerController::InputActionKeyDetect(const FInputActionInstance& Actio
 				GEngine->AddOnScreenDebugMessage(-1,5.f,FColor::Red,TEXT("GamePad"));
 				if (OnCallKeySwitch.IsBound())
 				{
-					OnCallKeySwitch.Execute(InputType);
+					OnCallKeySwitch.Broadcast(InputType);
 				}
 			}
 		}
@@ -59,7 +59,7 @@ void AJHPlayerController::InputAxisMouseMove(const FInputActionValue& Value)
 		InputType = EInputType::KeyMouse;
 		if (OnCallKeySwitch.IsBound())
 		{
-			OnCallKeySwitch.Execute(InputType);
+			OnCallKeySwitch.Broadcast(InputType);
 		}
 	}
 }
@@ -72,7 +72,7 @@ void AJHPlayerController::InputActionTouchDetect(const FInputActionInstance& Act
 		InputType = EInputType::Touch;
 		if (OnCallKeySwitch.IsBound())
 		{
-			OnCallKeySwitch.Execute(InputType);
+			OnCallKeySwitch.Broadcast(InputType);
 		}
 	}
 }

@@ -54,7 +54,7 @@ void ULayer_Game_ActivatableWidget::NativeOnInitialized()
 		VillagerCounter->SetText(FText::AsNumber(VillagerCount));
 	});
 
-	Cast<AJHPlayerController>(UGameplayStatics::GetPlayerController(this,0))->OnCallKeySwitch.BindLambda([this](EInputType NewInput)
+	Cast<AJHPlayerController>(UGameplayStatics::GetPlayerController(this,0))->OnCallKeySwitch.AddLambda([this](EInputType NewInput)
 	{
 		float Opacity = 0;
 		if (NewInput != EInputType::Gamepad)
