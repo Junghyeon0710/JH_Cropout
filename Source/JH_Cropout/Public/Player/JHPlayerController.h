@@ -47,9 +47,10 @@ protected:
 	void InputAxisMouseMove(const FInputActionValue& Value);
 	void InputActionTouchDetect(const FInputActionInstance& ActionInstance);
 
-	EInputType InputType;
+	
 public:
 	FOnCallKeySwitch OnCallKeySwitch;
+	EInputType InputType;
 };
 
 

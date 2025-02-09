@@ -3,6 +3,7 @@
 
 #include "UI/Game/Layer_Game_ActivatableWidget.h"
 
+#include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Kismet/GameplayStatics.h"
@@ -17,8 +18,7 @@
 void ULayer_Game_ActivatableWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
-
-
+	
 	BTN_Pause->OnClicked().AddLambda([this]()
 	{
 		MainStack->AddWidget<UPauseActivatableWidget>(PauseWidgetClass);
@@ -64,6 +64,8 @@ void ULayer_Game_ActivatableWidget::NativeOnInitialized()
 
 		BTN_Pause->SetRenderOpacity(Opacity);
 	});
+
+	//UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(UGameplayStatics::GetPlayerController(this,0));
 }
 
 void ULayer_Game_ActivatableWidget::AddStackItem(const TSubclassOf<UCommonActivatableWidget>& UCommonActivatableWidgetClass) const

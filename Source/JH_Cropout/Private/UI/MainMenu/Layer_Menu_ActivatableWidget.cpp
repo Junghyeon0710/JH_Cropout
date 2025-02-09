@@ -17,7 +17,7 @@ void ULayer_Menu_ActivatableWidget::OnActivate()
 
 void ULayer_Menu_ActivatableWidget::NativeOnActivated()
 {
-	Super::NativeOnActivated();
+	//Super::NativeOnActivated();
 	
 	MainStack->AddWidget<UMainMenuActivatableWidget>(ActivatableWidgetClass)->StackRef = MainStack;
 	

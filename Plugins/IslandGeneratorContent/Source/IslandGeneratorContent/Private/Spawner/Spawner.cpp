@@ -142,6 +142,7 @@ void ASpawner::SpawnAssets(TSubclassOf<AActor> Class, const FSpawnData& SpawnPar
 		if (UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetCurrent(GetWorld()))
 		{
 			FNavLocation RandomLocation;
+			//NavSystem->K2_GetRandomLocationInNavigableRadius()
 			NavSystem->GetRandomPointInNavigableRadius(FVector::ZeroVector,10000.f,RandomLocation,NavData);
 
 			//Pick Points around Biome Points
@@ -154,7 +155,7 @@ void ASpawner::SpawnAssets(TSubclassOf<AActor> Class, const FSpawnData& SpawnPar
 
 				FTransform SpawnTransform;
 				SpawnTransform.SetLocation(SteppedPosition(SpawnPos.Location));
-				SpawnTransform.SetRotation(FRotator(0.f,SpawnParams.RandomRotationRange,0.f).Quaternion());
+				SpawnTransform.SetRotation(FRotator(0.f,UKismetMathLibrary::RandomFloatInRange(0,SpawnParams.RandomRotationRange),0.f).Quaternion());
 				SpawnTransform.SetScale3D(FVector(UKismetMathLibrary::RandomFloatInRange(1.f,SpawnParams.ScaleRange+1.f)));
 
 				FActorSpawnParameters SpawnParameters;

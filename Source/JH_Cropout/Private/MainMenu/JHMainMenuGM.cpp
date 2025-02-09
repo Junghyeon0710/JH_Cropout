@@ -36,8 +36,8 @@ void AJHMainMenuGM::BeginPlay()
 	
 	ULayer_Menu_ActivatableWidget*  LayerMenu = CreateWidget<ULayer_Menu_ActivatableWidget>(UGameplayStatics::GetPlayerController(this,0),LayerMenuClass);
 	LayerMenu->AddToViewport();
-	LayerMenu->OnActivate();
-	 //LayerMenu->ActivateWidget(); //마우스 인풋이 안먹는 버그 있음,,;
+	//LayerMenu->OnActivate();
+	LayerMenu->ActivateWidget(); //마우스 인풋이 안먹는 버그 있음,,;
 	
 	if (const UJHGameInstance* GameInstance =  Cast<UJHGameInstance>(UGameplayStatics::GetGameInstance(this)))
 	{

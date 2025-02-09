@@ -5,6 +5,8 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "NavigationPath.h"
+#include "NavigationSystem.h"
 #include "Camera/CameraComponent.h"
 #include "Components/SphereComponent.h"
 #include "Extras/Cheats.h"
@@ -16,6 +18,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "Player/JHPlayerController.h"
 #include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+#include "Kismet/KismetArrayLibrary.h"
+#include "NiagaraDataInterfaceArrayFunctionLibrary.h"
+#include "Villagers/VillagersyInterface.h"
 
 AJH_Player::AJH_Player()
 {
@@ -154,7 +160,6 @@ void AJH_Player::MoveTracking()
 
 	Collision->SetWorldLocation(Intersection);
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Intersection: %s"), *Intersection.ToString()));
 
 
 }
@@ -270,9 +275,7 @@ void AJH_Player::ProjectMouseTouchToGroundPlane(FVector2D& OutScreenPos, FVector
 	float LocationX, LocationY;
 	bool bMousePosition = GetPlayerController()->GetMousePosition(LocationX, LocationY);
 	FVector2D MouseSize = FVector2D(LocationX, LocationY); // 마우스 위치
-
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("MouseSize: %s"), *MouseSize.ToString()));
-
+	
 	//  3. 터치 입력 상태 가져오기
 	float TouchLocationX, TouchLocationY;
 	bool bIsCurrentlyPressed;
@@ -339,11 +342,11 @@ void AJH_Player::ProjectMouseTouchToGroundPlane(FVector2D& OutScreenPos, FVector
 	}
 	else if (InputType == EInputType::Touch)
 	{
-		bReturnValue = bMousePosition;
+		bReturnValue = bIsCurrentlyPressed;
 	}
 	else if (InputType == EInputType::KeyMouse)
 	{
-		bReturnValue = bIsCurrentlyPressed;
+		bReturnValue = bMousePosition;
 	}
 
 	//  10. 결과 값 설정 (출력)
@@ -409,12 +412,23 @@ void AJH_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 		// VillagerInputAction
 		EnhancedInputComponent->BindAction(VillagerInputAction,ETriggerEvent::Triggered,this,&AJH_Player::VillagerActionTriggered);
 		EnhancedInputComponent->BindAction(VillagerInputAction,ETriggerEvent::Started,this,&AJH_Player::VillagerActionStart);
+		EnhancedInputComponent->BindAction(VillagerInputAction,ETriggerEvent::Canceled,this,&AJH_Player::VillagerActionCanceledAndCompleted);
+		EnhancedInputComponent->BindAction(VillagerInputAction,ETriggerEvent::Completed,this,&AJH_Player::VillagerActionCanceledAndCompleted);
+
+		// DragMove Action
+		EnhancedInputComponent->BindAction(DragMoveAction,ETriggerEvent::Triggered,this,&AJH_Player::DragMoveTriggered);
+
+		//Movement
+		EnhancedInputComponent->BindAction(MoveAction,ETriggerEvent::Triggered,this,&AJH_Player::MoveTriggered);
+		EnhancedInputComponent->BindAction(ZoomAction,ETriggerEvent::Triggered,this,&AJH_Player::ZoomTriggered);
+		EnhancedInputComponent->BindAction(SpinAction,ETriggerEvent::Triggered,this,&AJH_Player::SpinTriggered);
 
 	}
 }
 
 void AJH_Player::VillagerActionTriggered()
 {
+
 	VillagerAction = HoverActor;
 }
 
@@ -427,17 +441,87 @@ void AJH_Player::VillagerActionStart()
 		AActor* Actor;
 		if(VillagerOverlapCheck(Actor))
 		{
-			
+			VillagerSelect(Actor);
 		}
 		else
 		{
 			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetPlayerController()->GetLocalPlayer()))
 			{
 				checkf(DragMode,TEXT("No DragMode"));
-				Subsystem->AddMappingContext(DragMode,0);
+				Subsystem->AddMappingContext(DragMode,1);
 			}
 		}
 	}
+}
+
+void AJH_Player::VillagerActionCanceledAndCompleted()
+{
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetPlayerController()->GetLocalPlayer()))
+	{
+		checkf(DragMode,TEXT("No DragMode"));
+		FModifyContextOptions Options;
+		Options.bIgnoreAllPressedKeysUntilRelease = true;
+		Options.bForceImmediately = true;
+		Options.bNotifyUserSettings = false;
+		Subsystem->RemoveMappingContext(DragMode,Options);
+	}
+
+	if(IsValid(Selected))
+	{
+		if(IVillagersyInterface* Interface = Cast<IVillagersyInterface>(Selected))
+		{
+			Interface->Action(VillagerAction);
+			VillagerRelease();
+		}
+		VillagerAction = nullptr;
+	}
+}
+
+void AJH_Player::DragMoveTriggered()
+{
+	if(SingleTouchCheck())
+	{
+		TrackMove();
+	}
+	else
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetPlayerController()->GetLocalPlayer()))
+		{
+			checkf(DragMode,TEXT("No DragMode"));
+			FModifyContextOptions Options;
+			Options.bIgnoreAllPressedKeysUntilRelease = true;
+			Options.bForceImmediately = true;
+			Options.bNotifyUserSettings = false;
+			Subsystem->RemoveMappingContext(DragMode,Options);
+		}
+	}
+}
+
+void AJH_Player::MoveTriggered(const FInputActionValue& Value)
+{
+	// Movement and Rotation using WASD,QE or Controller
+	const FVector2D Values = Value.Get<FVector2D>();
+
+	AddMovementInput(GetActorForwardVector(),Values.Y);
+	AddMovementInput(GetActorRightVector(),Values.X);
+	
+}
+
+void AJH_Player::ZoomTriggered(const FInputActionValue& Value)
+{
+	const float ActionValue = Value.Get<float>();
+
+	ZoomDirection = ActionValue;
+
+	UpdateZoom();
+	Dof();
+}
+
+void AJH_Player::SpinTriggered(const FInputActionValue& Value)
+{
+	const float ActionValue = Value.Get<float>();
+
+	AddActorLocalRotation(FRotator(0.f,ActionValue,0.f));
 }
 
 bool AJH_Player::SingleTouchCheck() const
@@ -452,17 +536,17 @@ bool AJH_Player::SingleTouchCheck() const
 
 void AJH_Player::PositionCheck()
 {
-	if(InputType != EInputType::Touch)
-	{
-		return;
-	}
-		
 	FVector2D ScreenPos;
 	FVector Intersection;
 	bool bReturnValue;
 	ProjectMouseTouchToGroundPlane(ScreenPos,Intersection,bReturnValue);
-	Collision->SetWorldLocation(TargetHandle);
-	
+	TargetHandle = Intersection;
+
+	if(InputType != EInputType::Touch)
+	{
+		Collision->SetWorldLocation(TargetHandle);
+	}
+
 }
 
 bool AJH_Player::VillagerOverlapCheck(AActor*& OverlapActor) const
@@ -494,6 +578,77 @@ void AJH_Player::VillagerSelect(AActor* InSelected)
 		EAttachLocation::SnapToTarget,
 		false);
 
-	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle,)
+	
+	FTimerDelegate TimerDelegate;
+	TimerDelegate.BindUFunction(this,FName("UpdatePath"));
+	GetWorld()->GetTimerManager().SetTimer(UpdatePathTimer,TimerDelegate,0.01f,true);
 }
+
+void AJH_Player::VillagerRelease()
+{
+	GetWorld()->GetTimerManager().PauseTimer(UpdatePathTimer);
+	NSPath->DestroyComponent();
+	Selected = nullptr;
+}
+
+void AJH_Player::UpdatePath()
+{
+	// NavPath: 현재 위치(Collision)에서 목표 위치(Selected)까지의 경로를 동기적으로 계산
+	const UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(
+		this,  // 현재 액터 (AJH_Player)
+		Collision->GetComponentLocation(),  // 출발 지점: Collision 컴포넌트의 위치
+		Selected->GetActorLocation()  // 목표 지점: Selected 액터의 위치
+	);
+
+	// 경로 계산 결과가 유효한지 확인
+	if (NavPath->PathPoints.Num() > 0)
+	{
+		// PathPoints 배열을 경로로 업데이트
+		PathPoints = NavPath->PathPoints;
+
+		// 출발점과 목표점을 명시적으로 설정
+		PathPoints[0] = Collision->GetComponentLocation();  // 첫 번째 포인트: Collision의 위치
+		PathPoints[PathPoints.Num() - 1] = Selected->GetActorLocation();  // 마지막 포인트: Selected의 위치
+
+		// 경로 정보를 Niagara 시스템에 전달
+		UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector(NSPath, FName("TargetPath"), PathPoints);
+	}
+}
+
+void AJH_Player::TrackMove()
+{
+	// 카메라와 스프링 암 끝 사이의 오프셋을 고려한 카메라 위치 계산
+
+	const FVector SocketOffset = SpringArm->SocketOffset;
+
+	// SpringArm의 위치와 카메라의 오프셋을 계산
+	const FVector SpringArmLocation = SpringArm->GetComponentLocation();
+	const FVector ForwardOffset = SpringArm->GetForwardVector() * (SpringArm->TargetArmLength - SocketOffset.X) * -1.f;
+	const FVector UpwardOffset = SpringArm->GetUpVector() * SocketOffset.Z;
+
+	// 최종 카메라 위치 (앞쪽 및 위쪽 오프셋을 포함)
+	const FVector TargetCameraPosition = SpringArmLocation + ForwardOffset + UpwardOffset;
+
+	// 현재 카메라 위치와 목표 카메라 위치 간의 차이를 계산 (오프셋)
+	const FVector CameraOffset = TargetCameraPosition - Camera->GetComponentLocation();
+
+	// 마우스나 터치 입력을 월드 평면에 투영
+	FVector2D MouseScreenPos;
+	FVector MouseWorldIntersection;
+	bool bIsValidInput;
+	ProjectMouseTouchToGroundPlane(MouseScreenPos, MouseWorldIntersection, bIsValidInput);
+
+	if (bIsValidInput)
+	{
+		// 목표 위치를 계산하고 캐릭터의 월드 위치를 업데이트
+		FVector MoveDelta = TargetHandle - MouseWorldIntersection - CameraOffset;
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("TargetHandle %s"),*TargetHandle.ToString()));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Interaction %s"),*MouseWorldIntersection.ToString()));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("CameraOffset %s"),*CameraOffset.ToString()));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("MoveDelta %s"),*MoveDelta.ToString()));
+
+		AddActorWorldOffset(FVector(MoveDelta.X, MoveDelta.Y, 0)); // Z축 이동은 제외
+	}
+}
+
+

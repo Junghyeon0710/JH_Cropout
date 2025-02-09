@@ -18,6 +18,7 @@ class UCameraComponent;
 class USpringArmComponent;
 class USceneComponent;
 class UCurveFloat;
+struct FInputActionValue;
 
 USTRUCT(BlueprintType)
 struct FEdgeMoveVector
@@ -128,11 +129,33 @@ protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite , Category = Input)
 	TObjectPtr<UInputAction> VillagerInputAction;
 
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite , Category = Input)
+	TObjectPtr<UInputAction> DragMoveAction;
+	
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite , Category = Input)
+	TObjectPtr<UInputAction> MoveAction;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite , Category = Input)
+	TObjectPtr<UInputAction> ZoomAction;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite , Category = Input)
+	TObjectPtr<UInputAction> SpinAction;
+
 	/* ~Input*/
 	
-	/* Input Binding Fuction*/
+	/* Input Binding Function*/
 	void VillagerActionTriggered();
 	void VillagerActionStart();
+	void VillagerActionCanceledAndCompleted();
+
+	//void VillagerActionCompleted();
+	void DragMoveTriggered();
+
+	//Movement
+	void MoveTriggered(const FInputActionValue& Value);
+	void ZoomTriggered(const FInputActionValue& Value);
+	void SpinTriggered(const FInputActionValue& Value);
+	
 	
 public:	
 
@@ -142,6 +165,13 @@ public:
 
 	void PositionCheck();
 	void VillagerSelect(AActor* InSelected);
+	void VillagerRelease();
+	
+	UFUNCTION()
+	void UpdatePath();
+
+	void TrackMove();
+	
 	
 private:
 
@@ -150,6 +180,9 @@ private:
 	
 	float ZoomDirection = 0.f;
 	float ZoomValue = .5f;
+	TArray<FVector> PathPoints;
 
-	
+	FTimerHandle UpdatePathTimer;
+
+	FVector StoredMove;
 };

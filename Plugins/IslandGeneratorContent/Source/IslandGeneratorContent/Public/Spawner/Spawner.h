@@ -61,7 +61,7 @@ private:
 	FTimerHandle NavCheckHandle;
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly ,meta=(AllowPrivateAccess = true))
-	bool bActorSwitch;
+	bool bActorSwitch = true;
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly ,meta=(AllowPrivateAccess = true))
 	bool bCallSave;
