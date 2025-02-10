@@ -35,11 +35,24 @@ public:
 	UFUNCTION()
 	void NextTickFunction();
 	FTransformTexture TransformToTexture(FVector2d InVector);
-protected:
 
+	virtual float Interact();
+	void SetProgressionState(float Progression);
+	void PlacementMode();
+
+	//Progression
+	UPROPERTY(EditAnywhere,BlueprintReadOnly)
+	float ProgressionState;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly)
+	bool RequireBuild = false;
+	
+	UPROPERTY(EditAnywhere,BlueprintReadOnly)
+	TArray<UStaticMesh*> MeshList;
+protected:
 	
 	virtual void BeginPlay() override;
-
+	
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 	TObjectPtr<USceneComponent> Scene;
 
@@ -49,18 +62,13 @@ protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 	TObjectPtr<UBoxComponent> Box;
 
-	UPROPERTY(EditAnywhere,BlueprintReadOnly)
-	TArray<UStaticMesh*> MeshList;
 private: 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly ,meta=(AllowPrivateAccess = true))
 	TObjectPtr<UTextureRenderTarget2D> RT_Draw;
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly ,meta=(AllowPrivateAccess = true))
 	bool bEnableGroundBlend = true;
-
-	UPROPERTY(EditAnywhere,BlueprintReadOnly ,meta=(AllowPrivateAccess = true))
-	float ProgressionState;
-
+	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly ,meta=(AllowPrivateAccess = true))
 	float OutlineDraw;
 

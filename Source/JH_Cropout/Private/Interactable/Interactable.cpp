@@ -123,5 +123,32 @@ FTransformTexture AInteractable::TransformToTexture(FVector2d InVector)
 	return OutTransformTexture;
 }
 
+float AInteractable::Interact()
+{
+	return 0;
+}
+
+void AInteractable::SetProgressionState(float Progression)
+{
+	//Set progression state
+	ProgressionState = Progression;
+
+	//If this interactable requires building before use, apply the Build tag and set starting mesh from mesh list
+	if(RequireBuild)
+	{
+		Tags.Add(FName("Build"));
+		UStaticMesh* StaticMesh = MeshList[FMath::FloorToInt(ProgressionState)];
+		if(IsValid(StaticMesh))
+		{
+			Mesh->SetStaticMesh(StaticMesh);
+		}
+	}
+}
+
+void AInteractable::PlacementMode()
+{
+	bEnableGroundBlend = false;
+}
+
 
 
