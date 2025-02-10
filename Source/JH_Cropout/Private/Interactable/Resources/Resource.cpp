@@ -29,7 +29,7 @@ void AResource::ScaleUp(float Delay)
 	Mesh->SetHiddenInGame(true);
 
 	FTimerHandle DelayTimer;
-	GetWorld()->GetTimerManager().SetTimer(DelayTimer,FTimerDelegate::CreateLambda([this]()
+	GetWorld()->GetTimerManager().SetTimer(DelayTimer,FTimerDelegate::CreateWeakLambda(this,[this]()
 	{
 		Mesh->SetRelativeScale3D(FVector::ZeroVector);
 		Mesh->SetHiddenInGame(false);

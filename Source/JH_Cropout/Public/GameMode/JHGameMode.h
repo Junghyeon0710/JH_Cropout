@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "ResourceInterface.h"
 #include "GameFramework/GameModeBase.h"
+#include "Player/PlayerInterface.h"
 #include "ResourcesTypes/ResourcesTypes.h"
 #include "JHGameMode.generated.h"
 
@@ -18,7 +19,7 @@ class ULayer_Game_ActivatableWidget;
 class ASpawner;
 class UTextureRenderTarget2D;
 UCLASS()
-class JH_CROPOUT_API AJHGameMode : public AGameModeBase , public IResourceInterface
+class JH_CROPOUT_API AJHGameMode : public AGameModeBase , public IResourceInterface, public IPlayerInterface
 {
 	GENERATED_BODY()
 public:
@@ -31,6 +32,10 @@ public:
 	virtual bool CheckResource(EResourceType Resource, int32& OutValue) override;
 	/** ~IResourceInterface   */
 
+	/** IPlayerInterface */
+	virtual void AddUI(TSubclassOf<UCommonActivatableWidget> Widget) override;
+	/** ~IPlayerInterface   */
+	
 	FUpdateVillagers OnUpdateVillagers;
 	FUpdateResources OnUpdateResources;
 protected:

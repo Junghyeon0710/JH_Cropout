@@ -6,13 +6,22 @@
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/JHPlayerController.h"
-
-
+#include "Player/PlayerInterface.h"
+#include "UI/Common/JHCommonButtonBase.h"
+#include "GameFramework/GameMode.h"
 
 void UGameMainActivatableWidget::NativeOnActivated()
 {
 	Super::NativeOnActivated();
 
+	CUI_Button_55->OnClicked().AddWeakLambda(this,[this]()
+	{
+		if (IPlayerInterface* Interface = Cast<IPlayerInterface>(UGameplayStatics::GetGameMode(this)))
+		{
+			checkf(BuildWidgetClass,TEXT("NO BuildWidgetClass"));
+			Interface->AddUI(BuildWidgetClass);
+		}
+	});
 	//Set UI input mode. Switch between Game and UI and UI only to avoid common UI eating gamepad input.
 	AJHPlayerController* PC = Cast<AJHPlayerController>(UGameplayStatics::GetPlayerController(this,0));
 

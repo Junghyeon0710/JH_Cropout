@@ -75,3 +75,8 @@ bool AJHGameMode::CheckResource(EResourceType Resource, int32& OutValue)
 	
 }
 
+void AJHGameMode::AddUI(TSubclassOf<UCommonActivatableWidget> Widget)
+{
+	UIHUD->AddStackItem(Widget);
+}
+
