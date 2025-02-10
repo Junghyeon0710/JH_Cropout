@@ -56,6 +56,12 @@ void AJH_Player::PossessedBy(AController* NewController)
 
 }
 
+void AJH_Player::SwitchBuildMode(bool bIsInBuildMode)
+{
+	
+	
+}
+
 void AJH_Player::BeginPlay()
 {
 	Super::BeginPlay();
@@ -76,7 +82,10 @@ void AJH_Player::BeginPlay()
 		Subsystem->AddMappingContext(BaseInput, 0);
 		Subsystem->AddMappingContext(VillagerMode, 0);
 	}
-	
+
+	OnActorBeginOverlap.AddDynamic(this,&ThisClass::AJH_Player::BeginOverlap);
+	OnActorEndOverlap.AddDynamic(this,&ThisClass::AJH_Player::EndOverlap);
+
 }
 
 void AJH_Player::UpdateZoom()
@@ -401,6 +410,115 @@ void AJH_Player::CursorDistFromViewportCenter(const FVector2D& CursorPosition,FV
 	// 결과 값 설정
 	OutDirection = Direction;
 	OutStrength = 1.f;
+}
+
+void AJH_Player::BeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
+{
+	if (IsValid(HoverActor)) return;
+
+	HoverActor = OtherActor;
+	
+	GetWorld()->GetTimerManager().SetTimer(
+	ClosestHoverCheckTimer,
+	this, 
+	&ThisClass::ClosestHoverCheck, // 멤버 함수 바인딩
+	0.01f, 
+	true // 반복 실행
+	);
+}
+
+void AJH_Player::ClosestHoverCheck()
+{
+	//End Hover Check if not overlapping anything
+	TArray<AActor*> Actors;
+	Collision->GetOverlappingActors(Actors,AActor::StaticClass());
+
+	if (Actors.IsEmpty())
+	{
+		GetWorld()->GetTimerManager().PauseTimer(ClosestHoverCheckTimer);
+	}
+	else
+	{
+		 AActor* NewHover = nullptr;
+		// // Collision 영역과 겹치는 Villager (APawn)를 찾음 (Villager를 우선적으로 처리)
+		// Collision->GetOverlappingActors(Actors, APawn::StaticClass());
+		//
+		// for (int i = 0; i < Actors.Num(); ++i)
+		// {
+		// 	// 첫 번째 액터를 NewHover로 설정
+		// 	if (i == 0)
+		// 	{
+		// 		NewHover = Actors[i];
+		// 		continue;
+		// 	}
+		//
+		// 	// 현재 반복 중인 액터와 Collision 간의 거리 계산
+		// 	float DistanceToCollision = UKismetMathLibrary::Vector_Distance(
+		// 		Actors[i]->GetActorLocation(),
+		// 		Collision->GetComponentLocation()
+		// 	);
+		//
+		// 	// 현재 선택된 NewHover와 Collision 간의 거리 계산
+		// 	float DistanceToNewHover = UKismetMathLibrary::Vector_Distance(
+		// 		NewHover->GetActorLocation(),
+		// 		Collision->GetComponentLocation()
+		// 	);
+		//
+		// 	// 더 가까운 액터를 NewHover로 설정
+		// 	if (DistanceToCollision < DistanceToNewHover)
+		// 	{
+		// 		NewHover = Actors[i];
+		// 	}
+
+		
+		//}
+
+		//Check distance of all overlapping actors and find closest one
+		Collision->GetOverlappingActors(Actors,AActor::StaticClass());
+		for (int i =0; i<Actors.Num(); ++i)
+		{
+			if (i == 0)
+			{
+				NewHover = Actors[i];
+				continue;
+			}
+			float PawnToCollision = UKismetMathLibrary::Vector_Distance(Actors[i]->GetActorLocation(),Collision->GetComponentLocation());
+			float CollisionToNewHover =  UKismetMathLibrary::Vector_Distance(Collision->GetComponentLocation(),NewHover->GetActorLocation());
+
+			if (PawnToCollision < CollisionToNewHover)
+			{
+				NewHover = Actors[i];
+			}
+		}
+
+		//If closest overlapping actor is the currently hovered asset, do nothing.
+		if (HoverActor != NewHover)
+		{
+			HoverActor = NewHover;
+		}
+
+	}
+}
+
+void AJH_Player::EndOverlap(AActor* OverlappedActor, AActor* OtherActor)
+{
+	TArray<AActor*> Actors;
+	GetOverlappingActors(Actors);
+
+	if (Actors.IsEmpty())
+	{
+		FLatentActionInfo LatentInfo;
+		LatentInfo.CallbackTarget = this; // 콜백이 발생할 객체
+		LatentInfo.UUID = 1;             // 고유 ID
+		LatentInfo.Linkage = 0;          // 내부 사용
+		LatentInfo.ExecutionFunction = FName("WaitForHoverActorNullptr");
+		UKismetSystemLibrary::DelayUntilNextTick(this,LatentInfo);
+	}
+}
+
+void AJH_Player::WaitForHoverActorNullptr()
+{
+	HoverActor = nullptr;
 }
 
 void AJH_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

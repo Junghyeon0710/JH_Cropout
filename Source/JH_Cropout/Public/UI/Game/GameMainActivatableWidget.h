@@ -7,6 +7,7 @@
 #include "Input/InputType.h"
 #include "GameMainActivatableWidget.generated.h"
 
+class UBuildActivatableWidget;
 class UJHCommonButtonBase;
 /**
  * 
@@ -22,4 +23,7 @@ protected:
 
 	UPROPERTY(meta=(BindWidget) ,EditAnywhere,BlueprintReadWrite, meta=(AllowPrivateAccess= ture))
 	TObjectPtr<UJHCommonButtonBase> CUI_Button_55;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, meta=(AllowPrivateAccess= ture))
+	TSubclassOf<UCommonActivatableWidget> BuildWidgetClass;
 };

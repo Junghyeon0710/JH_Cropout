@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PlayerInterface.h"
 #include "GameFramework/Pawn.h"
 #include "Input/InputType.h"
 #include "JH_Player.generated.h"
@@ -34,7 +35,7 @@ struct FEdgeMoveVector
 };
 
 UCLASS()
-class JH_CROPOUT_API AJH_Player : public APawn
+class JH_CROPOUT_API AJH_Player : public APawn, public IPlayerInterface
 {
 	GENERATED_BODY()
 
@@ -42,6 +43,10 @@ public:
 
 	AJH_Player();
 	virtual void PossessedBy(AController* NewController) override;
+
+	/* IPlayerInterface **/
+	virtual void SwitchBuildMode(bool bIsInBuildMode) override;
+	/* ~IPlayerInterface **/
 	
 	void UpdateZoom();
 	void Dof();
@@ -61,6 +66,16 @@ public:
 	APlayerController* GetPlayerController() const;
 	void CursorDistFromViewportCenter(const FVector2D& CursorPosition,FVector& OutDirection, float& OutStrength);
 
+	UFUNCTION()
+	void BeginOverlap( AActor* OverlappedActor, AActor* OtherActor);
+
+	UFUNCTION()
+	void EndOverlap(AActor* OverlappedActor, AActor* OtherActor );
+
+	FTimerHandle ClosestHoverCheckTimer;
+	void ClosestHoverCheck();
+
+	void WaitForHoverActorNullptr();
 	
 protected:
 	virtual void BeginPlay() override;
