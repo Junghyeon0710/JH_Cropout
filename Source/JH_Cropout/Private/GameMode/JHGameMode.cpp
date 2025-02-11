@@ -5,12 +5,14 @@
 
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
+#include "Engine/AssetManager.h"
 #include "GameMode/JHBlueprintFunctionLibrary.h"
 #include "GameMode/JHGameInstance.h"
 #include "Kismet/BlueprintMapLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetRenderingLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Misc/SpawnMarker.h"
 #include "Spawner/Spawner.h"
 #include "UI/Game/Layer_Game_ActivatableWidget.h"
 
@@ -78,5 +80,47 @@ bool AJHGameMode::CheckResource(EResourceType Resource, int32& OutValue)
 void AJHGameMode::AddUI(TSubclassOf<UCommonActivatableWidget> Widget)
 {
 	UIHUD->AddStackItem(Widget);
+}
+
+void AJHGameMode::IslandGenComplete()
+{
+	FLatentActionInfo LatentInfo;
+	LatentInfo.CallbackTarget = this; // 콜백이 발생할 객체
+	LatentInfo.UUID = 1;             // 고유 ID
+	LatentInfo.Linkage = 0;          // 내부 사용
+	LatentInfo.ExecutionFunction = FName("LoadOrSpawnIslandAssets()");
+	
+	UKismetSystemLibrary::DelayUntilNextTick(this, LatentInfo);
+}
+
+void AJHGameMode::LoadOrSpawnIslandAssets()
+{
+	//Once Island has finished building, check if save file exists. If so, load data from Save file. If not, being spawning assets
+	UGameInstance* GI =  UGameplayStatics::GetGameInstance(this);
+	if (IJHGameInstanceInterface* Interface = Cast<IJHGameInstanceInterface>(GI))
+	{
+		//TODO 
+		if (Interface->CheckSaveBool())
+		{
+			
+		}
+		else
+		{
+			BeginAsyncSpawning();
+		}
+	}
+}
+
+void AJHGameMode::BeginAsyncSpawning()
+{
+	//Spawn Town Hall
+	FSoftObjectPath SoftObjectPath(TownHall_Ref.ToSoftObjectPath());
+	FStreamableDelegate Delegate;
+	UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftObjectPath, FStreamableDelegate::CreateLambda([this, SoftObjectPath]()
+	{
+		TArray<AActor*> Actors;
+		UGameplayStatics::GetAllActorsOfClass(this,ASpawnMarker::StaticClass(),Actors);
+		
+	}));
 }
 

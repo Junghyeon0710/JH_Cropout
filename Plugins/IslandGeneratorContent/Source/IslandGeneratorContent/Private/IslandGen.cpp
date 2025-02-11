@@ -15,6 +15,7 @@
 #include "GeometryScript/MeshBooleanFunctions.h"
 #include "GeometryScript/MeshUVFunctions.h"
 #include "Kismet/KismetMaterialLibrary.h"
+#include "GameFramework/GameMode.h"
 
 
 AIslandGen::AIslandGen()
@@ -122,6 +123,16 @@ void AIslandGen::CreateIsland(bool SpawnMarkers)
 	
 	UGeometryScriptLibrary_MeshUVFunctions::SetMeshUVsFromPlanarProjection(UVSMeshPlaneCut,0,FTransform(FRotator(),FVector(),FVector(100.f,100.f,100.f)), FGeometryScriptMeshSelection());
 
+	//Release all computer meshes and move the island slightly to retrigger nav mesh gen
+	ReleaseAllComputeMeshes();
+	AddActorWorldOffset(FVector(0.f,0.f,0.05f));
+
+	if (IIslandInterface* Interface = Cast<IIslandInterface>(UGameplayStatics::GetGameMode(this)))
+	{
+		Interface->IslandGenComplete();
+	}
+	
+	
 	// Set Island Col
 	check(MaterialParameterCollection);
 	FLinearColor LinearColor = UKismetMaterialLibrary::GetVectorParameterValue(this,MaterialParameterCollection,FName("GrassColour"));

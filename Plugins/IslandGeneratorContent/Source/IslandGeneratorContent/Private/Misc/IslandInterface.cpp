@@ -16,3 +16,7 @@ void IIslandInterface::SpawningComplete()
 void IIslandInterface::ScaleUp(float Delay)
 {
 }
+
+void IIslandInterface::IslandGenComplete()
+{
+}

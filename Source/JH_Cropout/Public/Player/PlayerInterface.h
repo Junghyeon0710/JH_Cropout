@@ -24,6 +24,6 @@ class JH_CROPOUT_API IPlayerInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 
-	virtual void AddUI(TSubclassOf<UCommonActivatableWidget> Widget) = 0;
+	virtual void AddUI(TSubclassOf<UCommonActivatableWidget> Widget);
 	virtual void SwitchBuildMode(bool bIsInBuildMode);
 };

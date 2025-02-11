@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "ResourceInterface.h"
 #include "GameFramework/GameModeBase.h"
+#include "Misc/IslandInterface.h"
 #include "Player/PlayerInterface.h"
 #include "ResourcesTypes/ResourcesTypes.h"
 #include "JHGameMode.generated.h"
@@ -19,7 +20,7 @@ class ULayer_Game_ActivatableWidget;
 class ASpawner;
 class UTextureRenderTarget2D;
 UCLASS()
-class JH_CROPOUT_API AJHGameMode : public AGameModeBase , public IResourceInterface, public IPlayerInterface
+class JH_CROPOUT_API AJHGameMode : public AGameModeBase , public IResourceInterface, public IPlayerInterface, public IIslandInterface
 {
 	GENERATED_BODY()
 public:
@@ -35,6 +36,14 @@ public:
 	/** IPlayerInterface */
 	virtual void AddUI(TSubclassOf<UCommonActivatableWidget> Widget) override;
 	/** ~IPlayerInterface   */
+
+	/** IIslandInterface */
+	virtual void IslandGenComplete() override;
+	/** ~IIslandInterface */
+
+	void LoadOrSpawnIslandAssets();
+
+	void BeginAsyncSpawning();
 	
 	FUpdateVillagers OnUpdateVillagers;
 	FUpdateResources OnUpdateResources;
@@ -59,4 +68,7 @@ private:
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly ,meta=(AllowPrivateAccess = true))
 	TMap<EResourceType,int32> Resources;
+	
+	UPROPERTY(EditAnywhere,BlueprintReadOnly ,meta=(AllowPrivateAccess = true))
+	TSoftClassPtr<AActor> TownHall_Ref;
 };

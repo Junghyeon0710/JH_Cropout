@@ -25,4 +25,5 @@ public:
 	virtual FRandomStream IslandSeed();
 	virtual void SpawningComplete();
 	virtual void ScaleUp(float Delay);
+	virtual void IslandGenComplete();
 };
