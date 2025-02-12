@@ -12,3 +12,8 @@ bool IResourceInterface::CheckResource(EResourceType Resource, int32& OutValue)
 {
 	return false;
 }
+
+void IResourceInterface::RemoveTargetResource(EResourceType Resource, int32 InValue)
+{
+	
+}

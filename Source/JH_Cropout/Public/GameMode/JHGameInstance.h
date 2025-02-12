@@ -33,6 +33,7 @@ public:
 	virtual void SaveGame() override;
 	virtual void UpdateAllInteractables() override;
 	virtual void UpdateAllResources(TMap<EResourceType, int32> NewParam) override;
+	virtual void UpdateAllVillagers() override;
 	/** ~IJHGameInstanceInterface */
 
 	/** IIslandInterface */

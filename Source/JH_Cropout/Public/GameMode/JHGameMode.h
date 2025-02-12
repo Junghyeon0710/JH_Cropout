@@ -31,6 +31,7 @@ public:
 	/** IResourceInterface */
 	virtual void AddResource(EResourceType Resource, int32 Value) override;
 	virtual bool CheckResource(EResourceType Resource, int32& OutValue) override;
+	virtual void RemoveTargetResource(EResourceType Resource, int32 InValue) override;
 	/** ~IResourceInterface   */
 
 	/** IPlayerInterface */
@@ -41,9 +42,12 @@ public:
 	virtual void IslandGenComplete() override;
 	/** ~IIslandInterface */
 
+	UFUNCTION()
 	void LoadOrSpawnIslandAssets();
 
 	void BeginAsyncSpawning();
+	void SpawnVillager();
+	void EndGame(bool bIsWin);
 	
 	FUpdateVillagers OnUpdateVillagers;
 	FUpdateResources OnUpdateResources;
@@ -71,4 +75,13 @@ private:
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly ,meta=(AllowPrivateAccess = true))
 	TSoftClassPtr<AActor> TownHall_Ref;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly ,meta=(AllowPrivateAccess = true))
+	TObjectPtr<AActor> TownHall;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly ,meta=(AllowPrivateAccess = true))
+	TSubclassOf<APawn> VillagerClass;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly ,meta=(AllowPrivateAccess = true))
+	int32 VillagerCount = 0;
 };

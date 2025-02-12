@@ -30,12 +30,8 @@ void ASpawner::BeginPlay()
 
 	if (!bAutoSpawn) return;
 
-	FLatentActionInfo LatentInfo;
-	LatentInfo.CallbackTarget = this; // 콜백이 발생할 객체
-	LatentInfo.UUID = 1;             // 고유 ID
-	LatentInfo.Linkage = 0;          // 내부 사용
-	LatentInfo.ExecutionFunction = FName("WaitForNavMeshAndAssets");
-	UKismetSystemLibrary::DelayUntilNextTick(this, LatentInfo);
+	SpawnRandom();
+
  }
 
 void ASpawner::AsyncLoadClasses()
@@ -63,6 +59,16 @@ void ASpawner::AsyncLoadClass()
 			AsyncLoadClass();
 		}
    }));
+}
+
+void ASpawner::SpawnRandom()
+{
+	FLatentActionInfo LatentInfo;
+	LatentInfo.CallbackTarget = this; // 콜백이 발생할 객체
+	LatentInfo.UUID = 1;             // 고유 ID
+	LatentInfo.Linkage = 0;          // 내부 사용
+	LatentInfo.ExecutionFunction = FName("WaitForNavMeshAndAssets");
+	UKismetSystemLibrary::DelayUntilNextTick(this, LatentInfo);
 }
 
 void ASpawner::WaitForNavMeshAndAssets()
@@ -219,4 +225,6 @@ void ASpawner::FinishSpawning() const
 		Interface->SpawningComplete();
 	}
 }
+
+
 

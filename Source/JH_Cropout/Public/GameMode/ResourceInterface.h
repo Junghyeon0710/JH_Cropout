@@ -26,4 +26,5 @@ public:
 
 	virtual void AddResource(EResourceType Resource, int32 Value);
 	virtual bool CheckResource(EResourceType Resource, int32& OutValue);
+	virtual void RemoveTargetResource(EResourceType Resource, int32 InValue);
 };

@@ -436,6 +436,7 @@ void AJH_Player::ClosestHoverCheck()
 	if (Actors.IsEmpty())
 	{
 		GetWorld()->GetTimerManager().PauseTimer(ClosestHoverCheckTimer);
+		HoverActor = nullptr;
 	}
 	else
 	{

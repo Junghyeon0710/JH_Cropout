@@ -26,7 +26,8 @@ public class JH_Cropout : ModuleRules
 			"GameplayCameras",
 			"IslandGeneratorContent",
 			"Niagara",
-			"NavigationSystem"
+			"NavigationSystem",
+			"AIModule"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

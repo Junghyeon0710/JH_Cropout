@@ -28,6 +28,7 @@ public:
 	FVector SteppedPosition(const FVector& InParam) const;
 	void SpawnInst(UInstancedStaticMeshComponent* Class, float Radius, int32 BiomeCount, int32 MaxSpawn);
 	void FinishSpawning() const;
+	void SpawnRandom();
 protected:
 
 	virtual void BeginPlay() override;

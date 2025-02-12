@@ -81,7 +81,27 @@ void UJHGameInstance::UpdateAllResources(TMap<EResourceType, int32> NewParam)
 	{
 		SaveGame();
 	}), 5.0f, false);
-}	
+}
+
+void UJHGameInstance::UpdateAllVillagers()
+{
+	SaveGameRef->Villagers.Empty();
+	TArray<AActor*> Actors;
+	UGameplayStatics::GetAllActorsOfClass(this,APawn::StaticClass(),Actors);
+
+	for(AActor* Actor : Actors)
+	{
+		if(Actor != UGameplayStatics::GetPlayerPawn(this,0))
+		{
+			FVillager Villager;
+			Villager.Location = Actor->GetActorLocation();
+			//Villager.Task = Actor->Tags[0];
+			SaveGameRef->Villagers.Add(Villager);
+		}
+		SaveGame();
+	}
+	
+}
 
 void UJHGameInstance::SpawningComplete()
 {

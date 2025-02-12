@@ -3,6 +3,8 @@
 
 #include "GameMode/JHGameMode.h"
 
+#include "NavigationSystem.h"
+#include "Blueprint/AIAsyncTaskBlueprintProxy.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Engine/AssetManager.h"
@@ -10,11 +12,14 @@
 #include "GameMode/JHGameInstance.h"
 #include "Kismet/BlueprintMapLibrary.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetRenderingLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Misc/SpawnMarker.h"
 #include "Spawner/Spawner.h"
 #include "UI/Game/Layer_Game_ActivatableWidget.h"
+#include "Blueprint/AIBlueprintHelperLibrary.h"
+
 
 AJHGameMode::AJHGameMode()
 {
@@ -77,6 +82,24 @@ bool AJHGameMode::CheckResource(EResourceType Resource, int32& OutValue)
 	
 }
 
+void AJHGameMode::RemoveTargetResource(EResourceType Resource, int32 InValue)
+{
+	//Update the target resource
+	const int32* FindValue = Resources.Find(Resource);
+	Resources.Add(Resource,*FindValue);
+	if(OnUpdateResources.IsBound())
+	{
+		OnUpdateResources.Execute(Resource,*FindValue);
+	}
+
+	//If food drops below 0, show end game screen with Lose condition
+	const int32* FoodValue = Resources.Find(EResourceType::Food);
+	if(*FoodValue <=0)
+	{
+		EndGame(false);
+	}
+}
+
 void AJHGameMode::AddUI(TSubclassOf<UCommonActivatableWidget> Widget)
 {
 	UIHUD->AddStackItem(Widget);
@@ -88,7 +111,7 @@ void AJHGameMode::IslandGenComplete()
 	LatentInfo.CallbackTarget = this; // 콜백이 발생할 객체
 	LatentInfo.UUID = 1;             // 고유 ID
 	LatentInfo.Linkage = 0;          // 내부 사용
-	LatentInfo.ExecutionFunction = FName("LoadOrSpawnIslandAssets()");
+	LatentInfo.ExecutionFunction = FName("LoadOrSpawnIslandAssets");
 	
 	UKismetSystemLibrary::DelayUntilNextTick(this, LatentInfo);
 }
@@ -120,7 +143,79 @@ void AJHGameMode::BeginAsyncSpawning()
 	{
 		TArray<AActor*> Actors;
 		UGameplayStatics::GetAllActorsOfClass(this,ASpawnMarker::StaticClass(),Actors);
-		
+		AActor* RandomActor = Actors[FMath::RandRange(0,Actors.Num()-1)];
+		if(RandomActor)
+		{
+			FTransform SpawnTransform = FTransform(UJHBlueprintFunctionLibrary::SteppedPosition(RandomActor->GetActorLocation()));
+			FActorSpawnParameters SpawnParameters;
+			SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::Undefined;
+			TownHall = GetWorld()->SpawnActor<AActor>(TownHall_Ref.Get(),SpawnTransform,SpawnParameters);
+
+			//Create 3 villagers
+			for(int i =0; i<=2 ; i++)
+			{
+				SpawnVillager();
+			}
+
+			//Update Villagers
+			if(OnUpdateVillagers.IsBound())
+			{
+				OnUpdateVillagers.Execute(VillagerCount);
+			}
+
+			if(IJHGameInstanceInterface* JIF = Cast<IJHGameInstanceInterface>(UGameplayStatics::GetGameInstance(this)))
+			{
+				JIF->UpdateAllVillagers();
+			}
+
+			//Spawn Interactables
+			SpawnerRef->SpawnRandom();
+		}
 	}));
 }
+
+void AJHGameMode::SpawnVillager()
+{
+	if (!TownHall) return; // TownHall이 nullptr이면 실행하지 않음.
+
+	// 마을회관의 월드 위치(Origin) 및 크기(Extent) 가져오기
+	FVector Origin, Extent;
+	TownHall->GetActorBounds(false, Origin, Extent);
+
+	// 마을회관 반경 내에서 랜덤 위치 생성
+	const float MinExtent = FMath::Min(Extent.X, Extent.Y);
+	FVector RandomOrigin = Origin + (UKismetMathLibrary::RandomUnitVector() * MinExtent * 2);
+	RandomOrigin.Z = 0; // 높이값 초기화 (지면 위에서 스폰하도록)
+
+	// 랜덤 위치 근처에서 이동 가능한 네비게이션 메시(NavMesh) 위치 찾기
+	FNavLocation ResultLocation;
+	const UNavigationSystemV1* NavSystem = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+    
+	if (!NavSystem || !NavSystem->GetRandomReachablePointInRadius(RandomOrigin, 500.f, ResultLocation))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("유효한 스폰 위치를 찾을 수 없음"));
+		return;
+	}
+
+	// VillagerClass가 설정되어 있는지 확인 후 AI 스폰
+	checkf(VillagerClass, TEXT("No VillagerClass"));
+	UAIBlueprintHelperLibrary::SpawnAIFromClass(this, VillagerClass, nullptr, ResultLocation);
+	
+}
+
+void AJHGameMode::EndGame(bool bIsWin)
+{
+	//UI Interactions
+	static bool bIsOne = false;
+
+	if(!bIsOne)
+	{
+		FTimerHandle DelayTimer;
+		GetWorld()->GetTimerManager().SetTimer(DelayTimer,FTimerDelegate::CreateWeakLambda(this,[this,bIsWin]()
+		{
+			UIHUD->EndGame(bIsWin);
+		}),3,false);
+	}
+}
+
 

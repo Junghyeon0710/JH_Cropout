@@ -28,4 +28,5 @@ public:
 	virtual void SaveGame() = 0;
 	virtual void UpdateAllInteractables() = 0 ;
 	virtual void UpdateAllResources(TMap<EResourceType,int32> NewParam) = 0 ;
+	virtual void UpdateAllVillagers() = 0;
 };

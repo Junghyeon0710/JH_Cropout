@@ -19,7 +19,7 @@ class JH_CROPOUT_API UMainMenuActivatableWidget : public UCommonActivatableWidge
 {
 	GENERATED_BODY()
 public:
-	void OnActivate();
+	//void OnActivate();
 protected:
 	virtual void NativeOnActivated() override;
 
