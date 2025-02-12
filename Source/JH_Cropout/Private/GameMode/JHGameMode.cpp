@@ -88,7 +88,7 @@ void AJHGameMode::IslandGenComplete()
 	LatentInfo.CallbackTarget = this; // 콜백이 발생할 객체
 	LatentInfo.UUID = 1;             // 고유 ID
 	LatentInfo.Linkage = 0;          // 내부 사용
-	LatentInfo.ExecutionFunction = FName("LoadOrSpawnIslandAssets()");
+	LatentInfo.ExecutionFunction = FName("LoadOrSpawnIslandAssets");
 	
 	UKismetSystemLibrary::DelayUntilNextTick(this, LatentInfo);
 }
@@ -120,7 +120,20 @@ void AJHGameMode::BeginAsyncSpawning()
 	{
 		TArray<AActor*> Actors;
 		UGameplayStatics::GetAllActorsOfClass(this,ASpawnMarker::StaticClass(),Actors);
-		
+		AActor* RandomActor = Actors[FMath::RandRange(0,Actors.Num()-1)];
+		if(RandomActor)
+		{
+			FTransform SpawnTransform = FTransform(UJHBlueprintFunctionLibrary::SteppedPosition(RandomActor->GetActorLocation()));
+			FActorSpawnParameters SpawnParameters;
+			SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::Undefined;
+			TownHall = GetWorld()->SpawnActor<AActor>(TownHall_Ref.Get(),SpawnTransform,SpawnParameters);
+
+			//Create 3 villagers
+			for(int i =0; i<=2 ; i++)
+			{
+				
+			}
+		}
 	}));
 }
 

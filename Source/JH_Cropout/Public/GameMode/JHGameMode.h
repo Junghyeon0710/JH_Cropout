@@ -41,6 +41,7 @@ public:
 	virtual void IslandGenComplete() override;
 	/** ~IIslandInterface */
 
+	UFUNCTION()
 	void LoadOrSpawnIslandAssets();
 
 	void BeginAsyncSpawning();
@@ -71,4 +72,7 @@ private:
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly ,meta=(AllowPrivateAccess = true))
 	TSoftClassPtr<AActor> TownHall_Ref;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly ,meta=(AllowPrivateAccess = true))
+	TObjectPtr<AActor> TownHall;
 };
