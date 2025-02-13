@@ -58,8 +58,19 @@ void AJH_Player::PossessedBy(AController* NewController)
 
 void AJH_Player::SwitchBuildMode(bool bIsInBuildMode)
 {
-	
-	
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetPlayerController()->GetLocalPlayer()))
+	{
+		if (bIsInBuildMode)
+		{
+			Subsystem->RemoveMappingContext(VillagerMode);
+			Subsystem->AddMappingContext(BuildMode,0);
+		}
+		else
+		{
+			Subsystem->RemoveMappingContext(BuildMode);
+			Subsystem->AddMappingContext(VillagerMode,0);
+		}
+	}
 }
 
 void AJH_Player::BeginPlay()
@@ -761,11 +772,7 @@ void AJH_Player::TrackMove()
 	{
 		// 목표 위치를 계산하고 캐릭터의 월드 위치를 업데이트
 		FVector MoveDelta = TargetHandle - MouseWorldIntersection - CameraOffset;
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("TargetHandle %s"),*TargetHandle.ToString()));
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Interaction %s"),*MouseWorldIntersection.ToString()));
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("CameraOffset %s"),*CameraOffset.ToString()));
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("MoveDelta %s"),*MoveDelta.ToString()));
-
+		
 		AddActorWorldOffset(FVector(MoveDelta.X, MoveDelta.Y, 0)); // Z축 이동은 제외
 	}
 }

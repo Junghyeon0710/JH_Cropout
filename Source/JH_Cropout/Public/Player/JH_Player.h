@@ -142,6 +142,9 @@ protected:
 	TObjectPtr<UInputMappingContext> DragMode;
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite , Category = Input)
+	TObjectPtr<UInputMappingContext> BuildMode;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite , Category = Input)
 	TObjectPtr<UInputAction> VillagerInputAction;
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite , Category = Input)

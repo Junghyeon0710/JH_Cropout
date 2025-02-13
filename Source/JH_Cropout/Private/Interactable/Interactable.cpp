@@ -83,7 +83,7 @@ void AInteractable::NextTickFunction()
 
 	//Remove if exactly overlapping another interactable. This will not be needed once Spawner is replaced by PCG.
 	TArray<AActor*> Actors;
-	GetOverlappingActors(Actors,GetClass());
+	GetOverlappingActors(Actors,AInteractable::GetClass());
 
 	for (auto&  Actor : Actors)
 	{

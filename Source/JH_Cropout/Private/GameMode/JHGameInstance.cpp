@@ -95,7 +95,7 @@ void UJHGameInstance::UpdateAllVillagers()
 		{
 			FVillager Villager;
 			Villager.Location = Actor->GetActorLocation();
-			//Villager.Task = Actor->Tags[0];
+			Villager.Task = Actor->Tags[0];
 			SaveGameRef->Villagers.Add(Villager);
 		}
 		SaveGame();

@@ -24,4 +24,5 @@ class JH_CROPOUT_API IVillagersyInterface
 public:
 
 	virtual void Action(AActor* Actor) = 0;
+	virtual void ChangeJob(FName NewJob) = 0;
 };

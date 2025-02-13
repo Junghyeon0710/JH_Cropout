@@ -3,14 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "VillagersyInterface.h"
 #include "GameFramework/Pawn.h"
 #include "JH_Villager.generated.h"
 
+class UAnimMontage;
+class UBehaviorTree;
+class UDataTable;
 class UFloatingPawnMovement;
 class UCapsuleComponent;
 
 UCLASS()
-class JH_CROPOUT_API AJH_Villager : public APawn
+class JH_CROPOUT_API AJH_Villager : public APawn , public IVillagersyInterface
 {
 	GENERATED_BODY()
 
@@ -21,6 +25,14 @@ public:
 
 	UFUNCTION()
 	void Eat() const;
+
+	/* IVillagersyInterface **/
+	virtual void Action(AActor* Actor) override;
+	virtual void ChangeJob(FName NewJob) override;
+	/* ~IVillagersyInterface **/
+
+	void ResetJobState();
+	void StopJob();
 	
 protected:
 
@@ -35,7 +47,7 @@ protected:
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 	TObjectPtr<UStaticMeshComponent> Tool;
-
+	
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 	TObjectPtr<USkeletalMeshComponent> Hat;
 
@@ -51,6 +63,36 @@ protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 	int32 Quantity;
 
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
+	FName Job = "Idle";
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	TObjectPtr<UDataTable> JobDataTable;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly , Category = "Job Profile")
+	TObjectPtr<UBehaviorTree> ActiveBehavior;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly , Category = "Job Profile")
+	TObjectPtr<AActor> TargetRef;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly , Category = "Job Profile")
+	TObjectPtr<UAnimMontage> WorkAnim;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly , Category = "Job Profile")
+	TObjectPtr<UStaticMesh> TargetTool;
+
 private:
 	FTimerHandle EatTimer;
+
+	UFUNCTION()
+	void AsyncLoadBehaviorTree();
+
+	UFUNCTION()
+	void AsyncLoadAnimMontage();
+
+	UFUNCTION()
+	void AsyncLoadSkeletalMesh();
+
+	UFUNCTION()
+	void AsyncLoadStaticMesh();
 };

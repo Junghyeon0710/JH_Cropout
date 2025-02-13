@@ -193,14 +193,15 @@ void AJHGameMode::SpawnVillager()
     
 	if (!NavSystem || !NavSystem->GetRandomReachablePointInRadius(RandomOrigin, 500.f, ResultLocation))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("유효한 스폰 위치를 찾을 수 없음"));
+		GEngine->AddOnScreenDebugMessage(-1,5.f,FColor::Red, TEXT("유효한 스폰 위치를 찾을 수 없음"));
 		return;
 	}
 
 	// VillagerClass가 설정되어 있는지 확인 후 AI 스폰
 	checkf(VillagerClass, TEXT("No VillagerClass"));
 	UAIBlueprintHelperLibrary::SpawnAIFromClass(this, VillagerClass, nullptr, ResultLocation);
-	
+
+	VillagerCount++;
 }
 
 void AJHGameMode::EndGame(bool bIsWin)
