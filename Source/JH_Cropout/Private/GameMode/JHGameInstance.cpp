@@ -112,10 +112,6 @@ FRandomStream UJHGameInstance::IslandSeed()
 	return IsValid(SaveGameRef) ? SaveGameRef->Seed : FRandomStream();
 }
 
-void UJHGameInstance::ScaleUp(float Delay)
-{
-}
-
 void UJHGameInstance::TransitionIn() const
 {
 	ShowTransitionWidget();

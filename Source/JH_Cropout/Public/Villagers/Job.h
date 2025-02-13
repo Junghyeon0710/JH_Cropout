@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "../../../../../Program Files/Epic Games/UE_5.4/Engine/Source/Runtime/CoreUObject/Public/UObject/SoftObjectPtr.h"
+//#include "../../../../../Program Files/Epic Games/UE_5.4/Engine/Source/Runtime/CoreUObject/Public/UObject/SoftObjectPtr.h"
 #include "Engine/DataTable.h"
 #include "Job.generated.h"
 

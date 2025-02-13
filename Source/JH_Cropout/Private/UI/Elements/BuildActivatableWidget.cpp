@@ -28,7 +28,9 @@ void UBuildActivatableWidget::NativePreConstruct()
 		if (FResourceStruct* Resource = BuidablesDataTable->FindRow<FResourceStruct>(Name,TEXT("")))
 		{
 			//	//For each data table entry, make a new UI element and add it to the container
-			if (UBuildItemCommonButtonBase* Widget = CreateWidget<UBuildItemCommonButtonBase>(UGameplayStatics::GetPlayerController(this,0),BuildItemClass))
+			if(!BuildItemClass) return;
+			
+			if (UBuildItemCommonButtonBase* Widget = CreateWidget<UBuildItemCommonButtonBase>(this,BuildItemClass))
 			{
 				Widget->TableData = *Resource;
 				if (UHorizontalBoxSlot* HorizontalBoxSlot = Container->AddChildToHorizontalBox(Widget))

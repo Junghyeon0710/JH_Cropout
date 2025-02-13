@@ -39,7 +39,6 @@ public:
 	/** IIslandInterface */
 	virtual void SpawningComplete() override;
 	virtual FRandomStream IslandSeed() override;
-	virtual void ScaleUp(float Delay) override;
 	/** ~IIslandInterface */
 	
 	void OpenLevel(const TSoftObjectPtr<UWorld>& Level) const;

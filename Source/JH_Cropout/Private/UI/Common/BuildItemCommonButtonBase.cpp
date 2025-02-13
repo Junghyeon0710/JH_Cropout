@@ -6,10 +6,12 @@
 #include "CommonTextBlock.h"
 #include "Components/Border.h"
 #include "Components/HorizontalBox.h"
+#include "Components/HorizontalBoxSlot.h"
 #include "Components/Image.h"
 #include "Components/SizeBox.h"
 #include "Engine/AssetManager.h"
 #include "Interactable/Interactable.h"
+#include "UI/Elements/CostWidget.h"
 
 UBuildItemCommonButtonBase::UBuildItemCommonButtonBase()
 {
@@ -47,8 +49,26 @@ void UBuildItemCommonButtonBase::NativePreConstruct()
 
 	//Set Resource Costs
 	CostContainer->ClearChildren();
-	//TODO:
-	
+
+	TArray<EResourceType> Resources;
+	TableData.Cost.GetKeys(Resources);
+	for(const EResourceType Key : Resources)
+	{
+		if(CostWidgetClass)
+		{
+			UCostWidget* CostWidget = CreateWidget<UCostWidget>(this,CostWidgetClass);
+			CostWidget->Cost = *TableData.Cost.Find(Key);
+			CostWidget->Resource = Key;
+
+			if(UHorizontalBoxSlot* HorizontalBoxSlot = CostContainer->AddChildToHorizontalBox(CostWidget))
+			{
+				FSlateChildSize Size;
+				Size.Value = 1.f;
+				Size.SizeRule = ESlateSizeRule::Fill;
+				HorizontalBoxSlot->SetSize(Size);
+			}
+		}
+	}
 }
 
 void UBuildItemCommonButtonBase::NativeOnInitialized()

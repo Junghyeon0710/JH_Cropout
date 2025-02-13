@@ -7,6 +7,7 @@
 #include "Interactable/Extras/ResourceStruct.h"
 #include "BuildItemCommonButtonBase.generated.h"
 
+class UCostWidget;
 class USizeBox;
 class UHorizontalBox;
 class UCommonTextBlock;
@@ -49,6 +50,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	TSubclassOf<AInteractable> HardClassRef;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSubclassOf<UCostWidget> CostWidgetClass;
 	
 protected:
 	virtual void NativePreConstruct() override;
