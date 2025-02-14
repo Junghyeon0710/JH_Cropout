@@ -8,7 +8,11 @@ void IPlayerInterface::AddUI(TSubclassOf<UCommonActivatableWidget> Widget)
 	
 }
 
-// Add default functionality here for any IPlayerInterface functions that are not pure virtual.
 void IPlayerInterface::SwitchBuildMode(bool bIsInBuildMode)
+{
+}
+
+void IPlayerInterface::BeginBuild(const TSubclassOf<AInteractable>& TargetClass,
+	const TMap<EResourceType, int32>& ResourceCost)
 {
 }

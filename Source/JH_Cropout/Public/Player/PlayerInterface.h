@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ResourcesTypes/ResourcesTypes.h"
 #include "UObject/Interface.h"
 #include "PlayerInterface.generated.h"
 
+class AInteractable;
 class UCommonActivatableWidget;
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
@@ -26,4 +28,5 @@ public:
 
 	virtual void AddUI(TSubclassOf<UCommonActivatableWidget> Widget);
 	virtual void SwitchBuildMode(bool bIsInBuildMode);
+	virtual void BeginBuild(const TSubclassOf<AInteractable>& TargetClass,const TMap<EResourceType,int32>& ResourceCost);
 };

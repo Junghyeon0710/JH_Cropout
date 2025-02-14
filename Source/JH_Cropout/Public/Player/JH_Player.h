@@ -46,6 +46,7 @@ public:
 
 	/* IPlayerInterface **/
 	virtual void SwitchBuildMode(bool bIsInBuildMode) override;
+	virtual void BeginBuild(const TSubclassOf<AInteractable>& TargetClass, const TMap<EResourceType, int32>& ResourceCost) override;
 	/* ~IPlayerInterface **/
 	
 	void UpdateZoom();
@@ -76,7 +77,9 @@ public:
 	void ClosestHoverCheck();
 
 	void WaitForHoverActorNullptr();
-	
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
+	TObjectPtr<AInteractable> Spawn;
 protected:
 	virtual void BeginPlay() override;
 	

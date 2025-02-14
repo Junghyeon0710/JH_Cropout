@@ -3,6 +3,7 @@
 
 #include "UI/Common/BuildItemCommonButtonBase.h"
 
+#include "CommonActivatableWidget.h"
 #include "CommonTextBlock.h"
 #include "Components/Border.h"
 #include "Components/HorizontalBox.h"
@@ -10,7 +11,9 @@
 #include "Components/Image.h"
 #include "Components/SizeBox.h"
 #include "Engine/AssetManager.h"
+#include "GameMode/JHGameMode.h"
 #include "Interactable/Interactable.h"
+#include "Kismet/GameplayStatics.h"
 #include "UI/Elements/CostWidget.h"
 
 UBuildItemCommonButtonBase::UBuildItemCommonButtonBase()
@@ -88,4 +91,69 @@ void UBuildItemCommonButtonBase::NativeOnInitialized()
 		StopAnimation(Loop_Hover);
 		PlayAnimation(Hightlight_Out);
 	});
+
+	// On pressed get player and trigger Begin Build, set focus back to game
+	OnClicked().AddWeakLambda(this,[this]()
+	{
+		if (APlayerController* PC = UGameplayStatics::GetPlayerController(this,0))
+		{
+			if (IPlayerInterface* Interface = Cast<IPlayerInterface>(PC->GetPawn()))
+			{
+				Interface->BeginBuild(HardClassRef,TableData.Cost);
+			}
+			if (IPlayerInterface* Interface = Cast<IPlayerInterface>(GetWorld()->GetAuthGameMode()) ; BuildConfirmClass)
+			{
+				Interface->AddUI(BuildConfirmClass);
+			}
+		}
+	});
+	
+}
+
+void UBuildItemCommonButtonBase::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	if (AJHGameMode* GM = GetWorld()->GetAuthGameMode<AJHGameMode>())
+	{
+		GM->OnUpdateResources.BindWeakLambda(this,[this](EResourceType Resource, int32 NewValue)
+		{
+			if (ResourceCheck())
+			{
+				SetIsInteractionEnabled(true);
+			}
+			else
+			{
+				SetIsInteractionEnabled(false);
+			}
+		});
+	}
+}
+
+bool UBuildItemCommonButtonBase::ResourceCheck()
+{
+	bEnableBuild = true;
+
+	if (IResourceInterface* Interface = Cast<IResourceInterface>(GetWorld()->GetAuthGameMode()))
+	{
+		TArray<EResourceType> ResourceTypes;
+		TableData.Cost.GetKeys(ResourceTypes);
+
+		for (const EResourceType& Resource : ResourceTypes)
+		{
+			if (const int32* RequiredValue = TableData.Cost.Find(Resource))
+			{
+				int32 AvailableValue = 0;
+				bool bCheckResource = Interface->CheckResource(Resource, AvailableValue);
+
+				if (!bCheckResource || AvailableValue < *RequiredValue)
+				{
+					bEnableBuild = false;
+					break;
+				}
+			}
+		}
+	}
+    
+	return bEnableBuild;
 }

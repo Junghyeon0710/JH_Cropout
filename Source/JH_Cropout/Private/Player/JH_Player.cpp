@@ -73,6 +73,12 @@ void AJH_Player::SwitchBuildMode(bool bIsInBuildMode)
 	}
 }
 
+void AJH_Player::BeginBuild(const TSubclassOf<AInteractable>& TargetClass,const TMap<EResourceType, int32>& ResourceCost)
+{
+	
+	
+}
+
 void AJH_Player::BeginPlay()
 {
 	Super::BeginPlay();

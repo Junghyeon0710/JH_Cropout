@@ -7,6 +7,7 @@
 #include "Interactable/Extras/ResourceStruct.h"
 #include "BuildItemCommonButtonBase.generated.h"
 
+class UCommonActivatableWidget;
 class UCostWidget;
 class USizeBox;
 class UHorizontalBox;
@@ -53,10 +54,15 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	TSubclassOf<UCostWidget> CostWidgetClass;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSubclassOf<UCommonActivatableWidget> BuildConfirmClass;
 	
 protected:
 	virtual void NativePreConstruct() override;
 	virtual void NativeOnInitialized() override;
+	virtual void NativeConstruct() override;
+	
 
 	UPROPERTY(Transient,meta=(BindWidgetAnim),BlueprintReadOnly)
 	TObjectPtr<UWidgetAnimation> Loop_Hover;
@@ -66,4 +72,8 @@ protected:
 
 	UPROPERTY(Transient,meta=(BindWidgetAnim),BlueprintReadOnly)
 	TObjectPtr<UWidgetAnimation> Highlight_In;
+
+private:
+	bool ResourceCheck();
+	bool bEnableBuild;
 };
