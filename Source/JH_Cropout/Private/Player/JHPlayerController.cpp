@@ -53,9 +53,10 @@ void AJHPlayerController::InputAxisMouseMove(const FInputActionValue& Value)
 	FVector2D AxisValue = Value.Get<FVector2D>();
 	if (AxisValue.IsZero()) return;
 
-	GEngine->AddOnScreenDebugMessage(-1,5.f,FColor::Red,TEXT("MouseMove"));
+
 	if (InputType != EInputType::KeyMouse)
 	{
+		GEngine->AddOnScreenDebugMessage(-1,5.f,FColor::Red,TEXT("MouseMove"));
 		InputType = EInputType::KeyMouse;
 		if (OnCallKeySwitch.IsBound())
 		{

@@ -46,7 +46,7 @@ public:
 
 	/* IPlayerInterface **/
 	virtual void SwitchBuildMode(bool bIsInBuildMode) override;
-	virtual void BeginBuild(const TSubclassOf<AInteractable>& TargetClass, const TMap<EResourceType, int32>& ResourceCost) override;
+	virtual void BeginBuild(const TSubclassOf<AInteractable>& TargetClass, const TMap<EResourceType, int32>& InResourceCost) override;
 	/* ~IPlayerInterface **/
 	
 	void UpdateZoom();
@@ -54,8 +54,11 @@ public:
 	void MoveTracking();
 	void UpdateCursorPosition();
 	void InputSwitch(EInputType NewInput);
+	void UpdateBuildAsset();
 	FEdgeMoveVector EdgeMove();
-
+	UFUNCTION(BlueprintImplementableEvent)
+	UStaticMeshComponent* AddStaticMeshComponent(const FTransform& Transform);
+	
 	/** 
 	 * 화면에서 입력한 위치를 월드 공간의 평면으로 변환하는 기능
 	 * @param OutScreenPos	선택된 입력 좌표 (스크린 좌표)
@@ -77,9 +80,16 @@ public:
 	void ClosestHoverCheck();
 
 	void WaitForHoverActorNullptr();
+	void CreateBuildOverlay();
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
 	TObjectPtr<AInteractable> Spawn;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
+	TSubclassOf<AInteractable> TargetSpawnClass;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
+	TMap<EResourceType, int32> ResourceCost;
 protected:
 	virtual void BeginPlay() override;
 	
@@ -121,18 +131,21 @@ protected:
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
 	TObjectPtr<AActor> HoverActor;
-
-	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
-	TObjectPtr<AActor> VillagerAction;
-
+	
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
 	TObjectPtr<AActor> Selected;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
+	TObjectPtr<UStaticMeshComponent> SpawnOverlay;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	float EdgeMoveDistance = 50.f;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	FVector TargetHandle;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
+	TObjectPtr<AActor> VillagerAction;
 	
 	/* Input*/
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite , Category = Input)
@@ -161,6 +174,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite , Category = Input)
 	TObjectPtr<UInputAction> SpinAction;
+	
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
+	TObjectPtr<UInputAction> BuildMoveAction;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite , Category = Input)
+	TObjectPtr<UMaterialParameterCollection> MPC_Cropout;
 
 	/* ~Input*/
 	
@@ -176,8 +195,10 @@ protected:
 	void MoveTriggered(const FInputActionValue& Value);
 	void ZoomTriggered(const FInputActionValue& Value);
 	void SpinTriggered(const FInputActionValue& Value);
-	
-	
+
+	//BuildMode
+	void BuildMoveTriggered();
+	void BuildCompleted();
 public:	
 
 
@@ -187,6 +208,8 @@ public:
 	void PositionCheck();
 	void VillagerSelect(AActor* InSelected);
 	void VillagerRelease();
+	bool CornersInNav();
+	bool PerformLineTrace(const FVector& StartPoint, const TArray<AActor*>& IgnoreActors, TArray<FHitResult>& OutHits);
 	
 	UFUNCTION()
 	void UpdatePath();
@@ -206,4 +229,6 @@ private:
 	FTimerHandle UpdatePathTimer;
 
 	FVector StoredMove;
+
+	bool bCanDrop;
 };

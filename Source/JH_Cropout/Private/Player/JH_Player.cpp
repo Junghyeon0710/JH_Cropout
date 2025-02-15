@@ -21,7 +21,11 @@
 #include "NiagaraComponent.h"
 #include "Kismet/KismetArrayLibrary.h"
 #include "NiagaraDataInterfaceArrayFunctionLibrary.h"
+#include "Components/BoxComponent.h"
+#include "GameMode/JHBlueprintFunctionLibrary.h"
 #include "Villagers/VillagersyInterface.h"
+#include "Interactable/Interactable.h"
+#include "Kismet/KismetMaterialLibrary.h"
 
 AJH_Player::AJH_Player()
 {
@@ -63,7 +67,7 @@ void AJH_Player::SwitchBuildMode(bool bIsInBuildMode)
 		if (bIsInBuildMode)
 		{
 			Subsystem->RemoveMappingContext(VillagerMode);
-			Subsystem->AddMappingContext(BuildMode,0);
+			Subsystem->AddMappingContext(BuildMode,99);
 		}
 		else
 		{
@@ -73,10 +77,18 @@ void AJH_Player::SwitchBuildMode(bool bIsInBuildMode)
 	}
 }
 
-void AJH_Player::BeginBuild(const TSubclassOf<AInteractable>& TargetClass,const TMap<EResourceType, int32>& ResourceCost)
+void AJH_Player::BeginBuild(const TSubclassOf<AInteractable>& TargetClass,const TMap<EResourceType, int32>& InResourceCost)
 {
-	
-	
+	TargetSpawnClass = TargetClass;
+	this->ResourceCost = InResourceCost;
+
+	if(IsValid(Spawn))
+	{
+		Destroy();
+	}
+	Spawn = GetWorld()->SpawnActor<AInteractable>(TargetSpawnClass,FTransform(GetActorLocation()));
+	Spawn->PlacementMode();
+	CreateBuildOverlay();
 }
 
 void AJH_Player::BeginPlay()
@@ -559,12 +571,15 @@ void AJH_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 		EnhancedInputComponent->BindAction(ZoomAction,ETriggerEvent::Triggered,this,&AJH_Player::ZoomTriggered);
 		EnhancedInputComponent->BindAction(SpinAction,ETriggerEvent::Triggered,this,&AJH_Player::SpinTriggered);
 
+		//BulidMove
+		EnhancedInputComponent->BindAction(BuildMoveAction,ETriggerEvent::Triggered,this,&AJH_Player::BuildMoveTriggered);
+		EnhancedInputComponent->BindAction(BuildMoveAction,ETriggerEvent::Completed,this,&AJH_Player::BuildCompleted);
+
 	}
 }
 
 void AJH_Player::VillagerActionTriggered()
 {
-
 	VillagerAction = HoverActor;
 }
 
@@ -658,6 +673,20 @@ void AJH_Player::SpinTriggered(const FInputActionValue& Value)
 	const float ActionValue = Value.Get<float>();
 
 	AddActorLocalRotation(FRotator(0.f,ActionValue,0.f));
+}
+
+void AJH_Player::BuildMoveTriggered()
+{
+	//GEngine->AddOnScreenDebugMessage(-1,5.f,FColor::Red,TEXT("Click"));
+	UpdateBuildAsset();
+}
+
+void AJH_Player::BuildCompleted()
+{
+	if(IsValid(Spawn))
+	{
+		SetActorLocation(UJHBlueprintFunctionLibrary::SteppedPosition(GetActorLocation()));
+	}
 }
 
 bool AJH_Player::SingleTouchCheck() const
@@ -783,4 +812,108 @@ void AJH_Player::TrackMove()
 	}
 }
 
+void AJH_Player::CreateBuildOverlay()
+{
+	if(!IsValid(SpawnOverlay))
+	{
+		FVector Origin;
+		FVector BoxExtent;
+		Spawn->GetActorBounds(false,Origin,BoxExtent);
+		if (UStaticMeshComponent* StaticMeshComponent = AddStaticMeshComponent(FTransform(FRotator::ZeroRotator,FVector::ZeroVector,FVector(BoxExtent/50.f))))
+		{
+			SpawnOverlay = StaticMeshComponent;
+			FAttachmentTransformRules Rules(EAttachmentRule::SnapToTarget,EAttachmentRule::KeepWorld,EAttachmentRule::KeepWorld,true);
+			SpawnOverlay->AttachToComponent(Spawn->Mesh,Rules);
+			UpdateBuildAsset();
+		}
+	}
+}
 
+void AJH_Player::UpdateBuildAsset()
+{
+	//Update Target Spawn Position
+	FVector2D ScreenPos;
+	FVector Intersection;
+	bool bReturn;
+	ProjectMouseTouchToGroundPlane(ScreenPos,Intersection,bReturn);
+
+	if(!bReturn || !IsValid(Spawn))
+	{
+		return;
+	}
+
+	FVector InterpVector = FMath::VInterpTo(Spawn->GetActorLocation(),Intersection,UGameplayStatics::GetWorldDeltaSeconds(this),18.f);
+
+	Spawn->SetActorLocation(InterpVector);
+
+	//If not overlapping anything and within bounds, asset can be spawned
+	TArray<AActor*> OverlayActors;
+	Spawn->GetOverlappingActors(OverlayActors,AInteractable::StaticClass());
+	
+	if(OverlayActors.Num() == 0)
+	{
+		bCanDrop = CornersInNav();
+	}
+	else
+	{
+		bCanDrop = false;
+	}
+
+	UKismetMaterialLibrary::SetVectorParameterValue(
+		this,
+		MPC_Cropout,
+		FName("Target Position"),
+		FLinearColor(InterpVector.X,InterpVector.Y,InterpVector.Z,bCanDrop));
+}
+
+// 주어진 점들을 기준으로 Line Trace를 실행하여 모든 라인에 대해 충돌이 있는지 체크하는 함수
+bool AJH_Player::CornersInNav()
+{
+    // Spawn 객체의 Box 컴포넌트의 Bounds 정보를 가져옴
+    FVector Origin, BoxExtent;
+    float SphereRadius;
+    UKismetSystemLibrary::GetComponentBounds(Spawn->Box, Origin, BoxExtent, SphereRadius);
+
+    // Box의 X, Y 크기를 1.05배로 확대하여 트레이스를 위한 4개의 모서리 위치 계산
+    float HalfWidth = BoxExtent.X * 1.05;
+    float HalfHeight = BoxExtent.Y * 1.05;
+    float NegHalfWidth = HalfWidth * -1;
+    float NegHalfHeight = HalfHeight * -1;
+
+    // 4개의 모서리 점 계산
+    FVector TopRight = Origin + FVector(HalfWidth, HalfHeight, 0);
+    FVector TopLeft = Origin + FVector(NegHalfWidth, HalfHeight, 0);
+    FVector BottomRight = Origin + FVector(HalfWidth, NegHalfHeight, 0);
+    FVector BottomLeft = Origin + FVector(NegHalfWidth, NegHalfHeight, 0);
+
+    // 트레이스를 무시할 액터 목록
+    TArray<FHitResult> OutHits;
+    TArray<AActor*> IgnoreActors;
+    IgnoreActors.Add(Spawn);
+
+    // 4개의 코너에서 LineTrace를 실행하여 충돌을 확인
+    if (!PerformLineTrace(TopRight, IgnoreActors, OutHits)) return false;
+    if (!PerformLineTrace(TopLeft, IgnoreActors, OutHits)) return false;
+    if (!PerformLineTrace(BottomRight, IgnoreActors, OutHits)) return false;
+    if (!PerformLineTrace(BottomLeft, IgnoreActors, OutHits)) return false;
+
+    // 네 개의 라인 모두에서 충돌이 없으면 true 반환
+    return true;
+}
+
+// 주어진 위치에서 LineTrace를 실행하고 결과를 반환하는 함수
+bool AJH_Player::PerformLineTrace(const FVector& StartPoint, const TArray<AActor*>& IgnoreActors, TArray<FHitResult>& OutHits)
+{
+    // LineTrace를 실행하여 주어진 점에서 아래로 충돌을 확인
+    return UKismetSystemLibrary::LineTraceMultiByProfile(
+        this,
+        FVector(StartPoint.X, StartPoint.Y, 100),  // Z 값은 100으로 고정하여 위에서 아래로 트레이스
+        FVector(StartPoint.X, StartPoint.Y, -1.f),  // -1로 Z 값을 낮추어 트레이스 진행
+        "Visibility",  // 프로파일 이름은 "Visibility"로 설정
+        false,          // 트레이스에서 충돌이 발생한 오브젝트는 무시하지 않음
+        IgnoreActors,   // 트레이스에서 무시할 액터 리스트
+        EDrawDebugTrace::ForOneFrame,  // 디버그 표시: 1 프레임 동안만 표시
+        OutHits,        // 충돌 결과가 저장될 배열
+        true            // 히트 결과를 캐스팅하여 처리
+    );
+}

@@ -20,6 +20,7 @@ public:
 	void UIGameMainAutoGenFunc(EInputType NewType);
 protected:
 	virtual void NativeOnActivated() override;
+	virtual void NativeOnInitialized() override;
 
 	UPROPERTY(meta=(BindWidget) ,EditAnywhere,BlueprintReadWrite, meta=(AllowPrivateAccess= ture))
 	TObjectPtr<UJHCommonButtonBase> CUI_Button_55;

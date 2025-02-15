@@ -148,6 +148,9 @@ void AInteractable::SetProgressionState(float Progression)
 void AInteractable::PlacementMode()
 {
 	bEnableGroundBlend = false;
+	Mesh->SetStaticMesh(MeshList[0]);
+	Tags[0] = FName("PlacementMode");
+	
 }
 
 

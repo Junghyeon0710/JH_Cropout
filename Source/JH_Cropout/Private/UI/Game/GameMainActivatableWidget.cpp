@@ -10,10 +10,10 @@
 #include "UI/Common/JHCommonButtonBase.h"
 #include "GameFramework/GameMode.h"
 
-void UGameMainActivatableWidget::NativeOnActivated()
-{
-	Super::NativeOnActivated();
 
+void UGameMainActivatableWidget::NativeOnInitialized()
+{
+	Super::NativeOnInitialized();
 	CUI_Button_55->OnClicked().AddWeakLambda(this,[this]()
 	{
 		if (IPlayerInterface* Interface = Cast<IPlayerInterface>(UGameplayStatics::GetGameMode(this)))
@@ -22,12 +22,20 @@ void UGameMainActivatableWidget::NativeOnActivated()
 			Interface->AddUI(BuildWidgetClass);
 		}
 	});
+	AJHPlayerController* PC = Cast<AJHPlayerController>(UGameplayStatics::GetPlayerController(this,0));
+	PC->OnCallKeySwitch.AddUObject(this,&ThisClass::UIGameMainAutoGenFunc);
+}
+
+
+void UGameMainActivatableWidget::NativeOnActivated()
+{
+	Super::NativeOnActivated();
+	
 	//Set UI input mode. Switch between Game and UI and UI only to avoid common UI eating gamepad input.
 	AJHPlayerController* PC = Cast<AJHPlayerController>(UGameplayStatics::GetPlayerController(this,0));
 
 	UIGameMainAutoGenFunc(PC->InputType);
-
-	PC->OnCallKeySwitch.AddUObject(this,&ThisClass::UIGameMainAutoGenFunc);
+	
 	PC->GetPawn()->EnableInput(PC);
 	PC->GetPawn()->SetActorTickEnabled(true);
 	UWidgetBlueprintLibrary::SetFocusToGameViewport();

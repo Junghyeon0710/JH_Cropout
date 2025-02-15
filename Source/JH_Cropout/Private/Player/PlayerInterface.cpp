@@ -13,6 +13,6 @@ void IPlayerInterface::SwitchBuildMode(bool bIsInBuildMode)
 }
 
 void IPlayerInterface::BeginBuild(const TSubclassOf<AInteractable>& TargetClass,
-	const TMap<EResourceType, int32>& ResourceCost)
+	const TMap<EResourceType, int32>& InResourceCost)
 {
 }

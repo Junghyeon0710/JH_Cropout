@@ -49,18 +49,18 @@ public:
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly)
 	TArray<UStaticMesh*> MeshList;
-protected:
-	
-	virtual void BeginPlay() override;
-	
-	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
-	TObjectPtr<USceneComponent> Scene;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 	TObjectPtr<UStaticMeshComponent> Mesh;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 	TObjectPtr<UBoxComponent> Box;
+protected:
+	
+	virtual void BeginPlay() override;
+	
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
+	TObjectPtr<USceneComponent> Scene;
 
 private: 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly ,meta=(AllowPrivateAccess = true))

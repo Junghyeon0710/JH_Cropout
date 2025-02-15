@@ -76,10 +76,10 @@ void UBuildActivatableWidget::NativeOnActivated()
 		{
 			if (APawn* Pawn = PC->GetPawn())
 			{
-				Pawn->DisableInput(PC);
+				Pawn->EnableInput(PC);
 				if (IPlayerInterface* Interface = Cast<IPlayerInterface>(Pawn))
 				{
-					Interface->SwitchBuildMode(true);
+					Interface->SwitchBuildMode(false);
 				}
 				DeactivateWidget();
 			}
