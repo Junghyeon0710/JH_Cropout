@@ -82,6 +82,13 @@ public:
 	void WaitForHoverActorNullptr();
 	void CreateBuildOverlay();
 
+	//Build Confirm Widget Fun
+	void SpawnBuildTarget();
+	void RotateSpawn();
+	void DestroySpawn();
+	
+	void RemoveResources();
+
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
 	TObjectPtr<AInteractable> Spawn;
 

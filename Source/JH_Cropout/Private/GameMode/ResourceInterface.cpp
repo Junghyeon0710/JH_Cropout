@@ -17,3 +17,8 @@ void IResourceInterface::RemoveTargetResource(EResourceType Resource, int32 InVa
 {
 	
 }
+
+TMap<EResourceType, int32> IResourceInterface::GetCurrentResources()
+{
+	return TMap<EResourceType,int32>();
+}

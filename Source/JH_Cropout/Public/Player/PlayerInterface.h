@@ -29,4 +29,5 @@ public:
 	virtual void AddUI(TSubclassOf<UCommonActivatableWidget> Widget);
 	virtual void SwitchBuildMode(bool bIsInBuildMode);
 	virtual void BeginBuild(const TSubclassOf<AInteractable>& TargetClass,const TMap<EResourceType,int32>& InResourceCost);
+	virtual void RemoveCurrentUILayer();
 };

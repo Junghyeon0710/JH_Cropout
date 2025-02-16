@@ -86,7 +86,7 @@ void AJHGameMode::RemoveTargetResource(EResourceType Resource, int32 InValue)
 {
 	//Update the target resource
 	const int32* FindValue = Resources.Find(Resource);
-	Resources.Add(Resource,*FindValue);
+	Resources.Add(Resource,*FindValue - InValue);
 	if(OnUpdateResources.IsBound())
 	{
 		OnUpdateResources.Execute(Resource,*FindValue);
@@ -100,9 +100,19 @@ void AJHGameMode::RemoveTargetResource(EResourceType Resource, int32 InValue)
 	}
 }
 
+TMap<EResourceType, int32> AJHGameMode::GetCurrentResources()
+{
+	return Resources;
+}
+
 void AJHGameMode::AddUI(TSubclassOf<UCommonActivatableWidget> Widget)
 {
 	UIHUD->AddStackItem(Widget);
+}
+
+void AJHGameMode::RemoveCurrentUILayer()
+{
+	UIHUD->PullCurrentActiveWidget();
 }
 
 void AJHGameMode::IslandGenComplete()

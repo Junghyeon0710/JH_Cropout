@@ -11,6 +11,7 @@
 #include "CommonUI/Public/CommonBorder.h"
 #include "Interactable/Interactable.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "ui/Common/JHCommonButtonBase.h"
 
 
 void UBuildConfirmActivatableWidget::NativeOnActivated()
@@ -37,6 +38,42 @@ void UBuildConfirmActivatableWidget::NativeOnActivated()
 	Transform.Translation.X = PositionX;
 	Transform.Translation.Y = PositionY;
 	CommonBorder_1->SetRenderTransform(Transform);
+
+	//Button Binding
+	BTN_Pos->OnClicked().AddLambda([this]
+	{
+		if(AJHPlayerController* PC = Cast<AJHPlayerController>(UGameplayStatics::GetPlayerController(this,0)))
+		{
+			if(AJH_Player* Player = Cast<AJH_Player>(PC->GetPawn()))
+			{
+				Player->SpawnBuildTarget();
+			}
+		}
+	});
+
+	BTN_Pos_1->OnClicked().AddLambda([this]
+	{
+		if (AJHPlayerController* PC = Cast<AJHPlayerController>(UGameplayStatics::GetPlayerController(this, 0)))
+		{
+			if (AJH_Player* Player = Cast<AJH_Player>(PC->GetPawn()))
+			{
+				Player->RotateSpawn();
+			}
+		}
+	});
+
+	BTN_Neg->OnClicked().AddLambda([this]
+	{
+		if (AJHPlayerController* PC = Cast<AJHPlayerController>(UGameplayStatics::GetPlayerController(this, 0)))
+		{
+			if (AJH_Player* Player = Cast<AJH_Player>(PC->GetPawn()))
+			{
+				Player->DestroySpawn();
+				DeactivateWidget();
+			}
+		}
+	});
+	
 }
 
 void UBuildConfirmActivatableWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)

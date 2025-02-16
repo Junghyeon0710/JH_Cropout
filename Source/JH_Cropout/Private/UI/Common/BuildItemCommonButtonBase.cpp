@@ -128,6 +128,14 @@ void UBuildItemCommonButtonBase::NativeConstruct()
 			}
 		});
 	}
+	if (ResourceCheck())
+	{
+		SetIsInteractionEnabled(true);
+	}
+	else
+	{
+		SetIsInteractionEnabled(false);
+	}
 }
 
 bool UBuildItemCommonButtonBase::ResourceCheck()

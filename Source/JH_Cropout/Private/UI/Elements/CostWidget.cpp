@@ -17,11 +17,11 @@ void UCostWidget::NativePreConstruct()
 	{
 		Texture = FoodTexture;
 	}
-	else if(Resource == EResourceType::Food && StoneTexture)
+	else if(Resource == EResourceType::Stone && StoneTexture)
 	{
 		Texture = StoneTexture;
 	}
-	else if(Resource == EResourceType::Food && WoodTexture)
+	else if(Resource == EResourceType::Wood && WoodTexture)
 	{
 		Texture = WoodTexture;
 	}

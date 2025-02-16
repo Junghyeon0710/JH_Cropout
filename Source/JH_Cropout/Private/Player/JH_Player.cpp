@@ -23,9 +23,12 @@
 #include "NiagaraDataInterfaceArrayFunctionLibrary.h"
 #include "Components/BoxComponent.h"
 #include "GameMode/JHBlueprintFunctionLibrary.h"
+#include "GameMode/ResourceInterface.h"
 #include "Villagers/VillagersyInterface.h"
 #include "Interactable/Interactable.h"
 #include "Kismet/KismetMaterialLibrary.h"
+#include "Save/JHGameInstanceInterface.h"
+#include "GameFramework/GameMode.h"
 
 AJH_Player::AJH_Player()
 {
@@ -825,6 +828,69 @@ void AJH_Player::CreateBuildOverlay()
 			FAttachmentTransformRules Rules(EAttachmentRule::SnapToTarget,EAttachmentRule::KeepWorld,EAttachmentRule::KeepWorld,true);
 			SpawnOverlay->AttachToComponent(Spawn->Mesh,Rules);
 			UpdateBuildAsset();
+		}
+	}
+}
+
+void AJH_Player::SpawnBuildTarget()
+{
+	if(!bCanDrop)
+	{
+		return;
+	}
+
+	if(AInteractable* SpawnActor = GetWorld()->SpawnActor<AInteractable>(TargetSpawnClass,Spawn->GetTransform()))
+	{
+		SpawnActor->SetProgressionState(0.f);
+		RemoveResources();
+		if(IJHGameInstanceInterface* Interface = Cast<IJHGameInstanceInterface>( GetGameInstance()))
+		{
+			Interface->UpdateAllInteractables();
+		}
+		UpdateBuildAsset();
+	}
+}
+
+void AJH_Player::RotateSpawn()
+{
+	Spawn->SetActorRotation(UKismetMathLibrary::ComposeRotators(Spawn->GetActorRotation(),FRotator(0,0,90)));
+}
+
+void AJH_Player::DestroySpawn()
+{
+	Spawn->Destroy();
+	SpawnOverlay->DestroyComponent();
+}
+
+void AJH_Player::RemoveResources()
+{
+	//Remove Resources
+	TArray<EResourceType> Resources;
+	ResourceCost.GetKeys(Resources);
+
+	for(auto Resource : Resources)
+	{
+		if(IResourceInterface* Interface = Cast<IResourceInterface>(GetWorld()->GetAuthGameMode()))
+		{
+			Interface->RemoveTargetResource(Resource,*ResourceCost.Find(Resource));
+		}
+	}
+
+	//Check if we have enough resources to place again
+	
+	for(auto Resource : Resources)
+	{
+		if(IResourceInterface* Interface = Cast<IResourceInterface>(GetWorld()->GetAuthGameMode()))
+		{
+			if(Interface->GetCurrentResources().Find(Resource) <= ResourceCost.Find(Resource))
+			{
+				if(IPlayerInterface* PlayerInterface = Cast<IPlayerInterface>(GetWorld()->GetAuthGameMode()))
+				{
+					PlayerInterface->RemoveCurrentUILayer();
+					DestroySpawn();
+					break;
+				}
+			}
 		}
 	}
 }

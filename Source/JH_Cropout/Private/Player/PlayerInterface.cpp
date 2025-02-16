@@ -16,3 +16,7 @@ void IPlayerInterface::BeginBuild(const TSubclassOf<AInteractable>& TargetClass,
 	const TMap<EResourceType, int32>& InResourceCost)
 {
 }
+
+void IPlayerInterface::RemoveCurrentUILayer()
+{
+}

@@ -32,10 +32,12 @@ public:
 	virtual void AddResource(EResourceType Resource, int32 Value) override;
 	virtual bool CheckResource(EResourceType Resource, int32& OutValue) override;
 	virtual void RemoveTargetResource(EResourceType Resource, int32 InValue) override;
+	virtual TMap<EResourceType,int32> GetCurrentResources() override;
 	/** ~IResourceInterface   */
 
 	/** IPlayerInterface */
 	virtual void AddUI(TSubclassOf<UCommonActivatableWidget> Widget) override;
+	virtual void RemoveCurrentUILayer() override;
 	/** ~IPlayerInterface   */
 
 	/** IIslandInterface */
