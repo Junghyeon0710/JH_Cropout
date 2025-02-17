@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameMode/ResourceInterface.h"
 #include "Interactable/Interactable.h"
 #include "Misc/IslandInterface.h"
 #include "ResourcesTypes/ResourcesTypes.h"
@@ -12,13 +13,17 @@
  * 
  */
 UCLASS()
-class JH_CROPOUT_API AResource : public AInteractable ,public IIslandInterface
+class JH_CROPOUT_API AResource : public AInteractable ,public IIslandInterface, public IResourceInterface
 {
 	GENERATED_BODY()
 public:
 	//*IIslandInterface */
 	virtual void ScaleUp(float Delay) override;
 	//* ~IIslandInterface */
+
+	//*IResourceInterface */
+	virtual void RemoveResource(EResourceType& OutResource, int32& OutValue) override;
+	//* ~IResourceInterface */
 
 	virtual void OnConstruction(const FTransform& Transform) override;
 	

@@ -25,4 +25,6 @@ public:
 
 	virtual void Action(AActor* Actor) = 0;
 	virtual void ChangeJob(FName NewJob) = 0;
+	virtual void ReturnToDefaultBT() = 0;
+	virtual void PlayWorkAnim(float Delay) = 0;
 };

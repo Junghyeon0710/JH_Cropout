@@ -142,6 +142,19 @@ void AJH_Villager::ChangeJob(FName NewJob)
 	
 }
 
+void AJH_Villager::ReturnToDefaultBT()
+{
+	ChangeJob(FName("Idle"));
+}
+
+void AJH_Villager::PlayWorkAnim(float Delay)
+{
+	PlayVillagerAnim(WorkAnim,Delay);
+	Tool->SetStaticMesh(TargetTool);
+	Tool->SetVisibility(true);
+	
+}
+
 void AJH_Villager::AsyncLoadBehaviorTree()
 {
 	AAIController* AC = Cast<AAIController>(GetController());
@@ -215,6 +228,33 @@ void AJH_Villager::StopJob()
 
 	Quantity = 0;
 	
+}
+
+void AJH_Villager::PlayVillagerAnim(UAnimMontage* Montage, float Length)
+{
+	UAnimInstance* AnimInstance = SkeletalMesh->GetAnimInstance();
+	if (AnimInstance && Montage)
+	{
+		// 애니메이션 재생
+		AnimInstance->Montage_Play(Montage);
+
+		// 애니메이션 종료 이벤트 바인딩
+		FOnMontageEnded EndDelegate;
+		EndDelegate.BindUObject(this, &AJH_Villager::OnMontageEnded);
+		AnimInstance->Montage_SetEndDelegate(EndDelegate, Montage);
+	}
+
+	FTimerHandle Timer;
+	GetWorld()->GetTimerManager().SetTimer(Timer,FTimerDelegate::CreateLambda([AnimInstance]()
+	{
+		AnimInstance->Montage_StopGroupByName(0,FName("DefaultGroup"));
+	}),Length,false);
+	
+}
+
+void AJH_Villager::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	Tool->SetVisibility(false);
 }
 
 

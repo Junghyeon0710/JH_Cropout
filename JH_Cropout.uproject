@@ -13,7 +13,8 @@
 				"GeometryFramework",
 				"CommonUI",
 				"UMG",
-				"IslandGeneratorContent"
+				"IslandGeneratorContent",
+				"AIModule"
 			]
 		}
 	],
@@ -41,6 +42,5 @@
 			"Name": "Niagara",
 			"Enabled": true
 		}
-		
 	]
 }

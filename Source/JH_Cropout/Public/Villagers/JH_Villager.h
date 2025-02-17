@@ -29,11 +29,15 @@ public:
 	/* IVillagersyInterface **/
 	virtual void Action(AActor* Actor) override;
 	virtual void ChangeJob(FName NewJob) override;
+	virtual void ReturnToDefaultBT() override;
+	virtual void PlayWorkAnim(float Delay) override;
 	/* ~IVillagersyInterface **/
 
 	void ResetJobState();
 	void StopJob();
-	
+	void PlayVillagerAnim(UAnimMontage* Montage,float Length);
+	UFUNCTION()
+	void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 protected:
 
 	virtual void BeginPlay() override;
@@ -95,4 +99,6 @@ private:
 
 	UFUNCTION()
 	void AsyncLoadStaticMesh();
+
+	
 };

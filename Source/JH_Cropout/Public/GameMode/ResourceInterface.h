@@ -25,6 +25,7 @@ class JH_CROPOUT_API IResourceInterface
 public:
 
 	virtual void AddResource(EResourceType Resource, int32 Value);
+	virtual void RemoveResource(EResourceType& OutResource, int32& OutValue);
 	virtual bool CheckResource(EResourceType Resource, int32& OutValue);
 	virtual void RemoveTargetResource(EResourceType Resource, int32 InValue);
 	virtual TMap<EResourceType,int32> GetCurrentResources();

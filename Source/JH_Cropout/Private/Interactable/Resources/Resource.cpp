@@ -36,6 +36,19 @@ void AResource::ScaleUp(float Delay)
 		StartAnimation();
 	}),
 	Delay,false);
+
+	
+}
+
+void AResource::RemoveResource(EResourceType& OutResource, int32& OutValue)
+{
+	EndWobble();
+	if (ResourceAmount == -1)
+	{
+		return;
+	}
+
+	
 }
 
 

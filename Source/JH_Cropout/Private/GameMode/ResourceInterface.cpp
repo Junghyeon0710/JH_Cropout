@@ -8,6 +8,10 @@ void IResourceInterface::AddResource(EResourceType Resource, int32 Value)
 {
 }
 
+void IResourceInterface::RemoveResource(EResourceType& OutResource, int32& OutValue)
+{
+}
+
 bool IResourceInterface::CheckResource(EResourceType Resource, int32& OutValue)
 {
 	return false;

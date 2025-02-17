@@ -40,6 +40,12 @@ public:
 	void SetProgressionState(float Progression);
 	void PlacementMode();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void PlayWobble(FVector NewParam);
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void EndWobble();
+
 	//Progression
 	UPROPERTY(EditAnywhere,BlueprintReadOnly)
 	float ProgressionState;
@@ -62,6 +68,8 @@ protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 	TObjectPtr<USceneComponent> Scene;
 
+
+	
 private: 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly ,meta=(AllowPrivateAccess = true))
 	TObjectPtr<UTextureRenderTarget2D> RT_Draw;
