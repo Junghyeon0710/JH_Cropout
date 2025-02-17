@@ -5,6 +5,12 @@
 
 #include "Kismet/KismetArrayLibrary.h"
 
+void AResource::Death()
+{
+	//What to do when the resource is to be destroyed 
+	Destroy();
+}
+
 void AResource::BeginPlay()
 {
 	Super::BeginPlay();
@@ -15,7 +21,10 @@ void AResource::OnConstruction(const FTransform& Transform)
 	Super::OnConstruction(Transform);
 	
 	//Set the resource type to a tag so villagers can easily spot which resource is which without needing to cast
-	Tags.Add(UEnum::GetValueAsName(ResourceType));
+	const FString FullEnumName = UEnum::GetValueAsString(ResourceType);
+	FString EnumName;
+	FullEnumName.Split(TEXT("::"), nullptr, &EnumName);
+	Tags.Add(FName(EnumName));
 
 	//Pick Random mesh from collection
 	if (!bUseRandomMesh || MeshList.IsEmpty()) return;
@@ -43,12 +52,19 @@ void AResource::ScaleUp(float Delay)
 void AResource::RemoveResource(EResourceType& OutResource, int32& OutValue)
 {
 	EndWobble();
+	OutResource = ResourceType;
+	OutValue = CollectionValue;
 	if (ResourceAmount == -1)
 	{
 		return;
 	}
 
-	
+	ResourceAmount = FMath::Max( ResourceAmount - CollectionValue, 0);
+
+	if(ResourceAmount <= 0 )
+	{
+		Death();
+	}
 }
 
 

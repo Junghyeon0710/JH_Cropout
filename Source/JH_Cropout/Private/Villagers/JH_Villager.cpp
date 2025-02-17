@@ -25,6 +25,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameMode.h"
 #include "Engine/SkeletalMesh.h"
+#include "Save/JHGameInstanceInterface.h"
 #include "Villagers/Job.h"
 
 AJH_Villager::AJH_Villager()
@@ -89,6 +90,20 @@ void AJH_Villager::Eat() const
 
 void AJH_Villager::Action(AActor* Actor)
 {
+	if (!IsValid(Actor))
+	{
+		return;
+	}
+	TargetRef = Actor;
+	if (Actor->Tags.IsValidIndex(0))
+	{
+		ChangeJob(Actor->Tags[0]);
+		if(IJHGameInstanceInterface* Interface = Cast<IJHGameInstanceInterface>(GetGameInstance()))
+		{
+			Interface->UpdateAllVillagers();
+		}
+	}
+	
 }
 
 void AJH_Villager::ChangeJob(FName NewJob)

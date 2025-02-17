@@ -29,6 +29,8 @@ public:
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void StartAnimation();
+
+	void Death();
 protected:
 	virtual void BeginPlay() override;
 
