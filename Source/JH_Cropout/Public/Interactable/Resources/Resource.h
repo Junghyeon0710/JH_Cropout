@@ -31,6 +31,7 @@ public:
 	void StartAnimation();
 
 	void Death();
+	virtual float Interact() override;
 protected:
 	virtual void BeginPlay() override;
 

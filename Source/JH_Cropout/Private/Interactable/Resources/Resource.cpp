@@ -11,6 +11,11 @@ void AResource::Death()
 	Destroy();
 }
 
+float AResource::Interact()
+{
+	return CollectionTime;
+}
+
 void AResource::BeginPlay()
 {
 	Super::BeginPlay();

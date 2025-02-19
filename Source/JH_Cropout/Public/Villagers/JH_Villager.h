@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "VillagersyInterface.h"
 #include "GameFramework/Pawn.h"
+#include "GameMode/ResourceInterface.h"
 #include "JH_Villager.generated.h"
 
 class UAnimMontage;
@@ -14,7 +15,7 @@ class UFloatingPawnMovement;
 class UCapsuleComponent;
 
 UCLASS()
-class JH_CROPOUT_API AJH_Villager : public APawn , public IVillagersyInterface
+class JH_CROPOUT_API AJH_Villager : public APawn , public IVillagersyInterface,public IResourceInterface
 {
 	GENERATED_BODY()
 
@@ -31,13 +32,25 @@ public:
 	virtual void ChangeJob(FName NewJob) override;
 	virtual void ReturnToDefaultBT() override;
 	virtual void PlayWorkAnim(float Delay) override;
+	virtual float PlayDeliverAnim() override;
 	/* ~IVillagersyInterface **/
 
+	/* IResourceInterface **/
+	virtual void AddResource(EResourceType Resource, int32 Value) override;
+	virtual void RemoveResource(EResourceType& OutResource, int32& OutValue) override;
+	/* ~IResourceInterface **/
 	void ResetJobState();
 	void StopJob();
 	void PlayVillagerAnim(UAnimMontage* Montage,float Length);
 	UFUNCTION()
 	void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly , Category = "Job Profile")
+	TObjectPtr<AActor> TargetRef;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly )
+	TObjectPtr<UAnimMontage> VillagerMontage;
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -65,10 +78,16 @@ protected:
 	TObjectPtr<UFloatingPawnMovement> FloatingPawnMovement;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
+	EResourceType ResourcesHeld;
+	
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 	int32 Quantity;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 	FName Job = "Idle";
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	TObjectPtr<UStaticMesh> CrateMesh;
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	TObjectPtr<UDataTable> JobDataTable;
@@ -76,9 +95,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly , Category = "Job Profile")
 	TObjectPtr<UBehaviorTree> ActiveBehavior;
 
-	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly , Category = "Job Profile")
-	TObjectPtr<AActor> TargetRef;
-
+	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly , Category = "Job Profile")
 	TObjectPtr<UAnimMontage> WorkAnim;
 

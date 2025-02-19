@@ -31,7 +31,7 @@ class JH_CROPOUT_API AInteractable : public AActor
 public:
 	AInteractable();
 	virtual void OnConstruction(const FTransform& Transform) override;
-	
+
 	UFUNCTION()
 	void NextTickFunction();
 	FTransformTexture TransformToTexture(FVector2d InVector);

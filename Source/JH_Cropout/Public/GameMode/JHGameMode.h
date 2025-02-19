@@ -14,7 +14,7 @@
  * 
  */
 DECLARE_DELEGATE_OneParam(FUpdateVillagers,int32 VillagerCount);
-DECLARE_DELEGATE_TwoParams(FUpdateResources,EResourceType Resource, int32 /*NewValue */ );
+DECLARE_MULTICAST_DELEGATE_TwoParams(FUpdateResources,EResourceType Resource, int32 /*NewValue */ );
 
 class ULayer_Game_ActivatableWidget;
 class ASpawner;

@@ -116,7 +116,7 @@ void UBuildItemCommonButtonBase::NativeConstruct()
 
 	if (AJHGameMode* GM = GetWorld()->GetAuthGameMode<AJHGameMode>())
 	{
-		GM->OnUpdateResources.BindWeakLambda(this,[this](EResourceType Resource, int32 NewValue)
+		GM->OnUpdateResources.AddWeakLambda(this,[this](EResourceType Resource, int32 NewValue)
 		{
 			if (ResourceCheck())
 			{

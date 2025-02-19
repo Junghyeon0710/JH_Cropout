@@ -49,7 +49,7 @@ void UResourceWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
-	Cast<AJHGameMode>(UGameplayStatics::GetGameMode(this))->OnUpdateResources.BindUObject(this,&ThisClass::UpdateValue);
+	Cast<AJHGameMode>(UGameplayStatics::GetGameMode(this))->OnUpdateResources.AddUObject(this,&ThisClass::UpdateValue);
 	
 }
 

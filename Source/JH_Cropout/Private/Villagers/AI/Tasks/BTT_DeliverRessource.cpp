@@ -1,18 +1,19 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Villagers/AI/Tasks/BTT_Work.h"
+#include "Villagers/AI/Tasks/BTT_DeliverRessource.h"
 
 #include "AIController.h"
-#include "Interactable/Interactable.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Interactable/Interactable.h"
 #include "GameMode/ResourceInterface.h"
 #include "Villagers/VillagersyInterface.h"
+#include "GameFramework/GameMode.h"
 
-EBTNodeResult::Type UBTT_Work::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UBTT_DeliverRessource::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	//If both values are valid, continue, otherwise return fail
-	 UBlackboardComponent* BlackboardComponent = OwnerComp.GetBlackboardComponent();
+	UBlackboardComponent* BlackboardComponent = OwnerComp.GetBlackboardComponent();
 
 	bool bValidTarget = IsValid( BlackboardComponent->GetValueAsObject(TakeFrom.SelectedKeyName));
 	bool bSelfActor = IsValid( BlackboardComponent->GetValueAsObject(GiveTo.SelectedKeyName));
@@ -22,15 +23,14 @@ EBTNodeResult::Type UBTT_Work::ExecuteTask(UBehaviorTreeComponent& OwnerComp, ui
 		return	EBTNodeResult::Failed;
 	}
 
-	//Play transfer event, wait for delay, transfer resources
-	Interactable = Cast<AInteractable>(BlackboardComponent->GetValueAsObject(TakeFrom.SelectedKeyName));
-
-	Interactable->PlayWobble(AIOwner->GetPawn()->GetActorLocation());
-	float Interact = Interactable->Interact();
-	if (IVillagersyInterface* Interface = Cast<IVillagersyInterface>(AIOwner->GetPawn()))
+	float Delay = 0.f;
+	if(IVillagersyInterface* Interface = Cast<IVillagersyInterface>(AIOwner->GetPawn()))
 	{
-		Interface->PlayWorkAnim(Interact);
+		Delay = Interface->PlayDeliverAnim();
 	}
+	
+	//Play transfer event, wait for delay, transfer resources
+	
 	FTimerHandle Timer;
 	GetWorld()->GetTimerManager().SetTimer(Timer,FTimerDelegate::CreateWeakLambda(this,[this,BlackboardComponent]()
 	{
@@ -39,22 +39,15 @@ EBTNodeResult::Type UBTT_Work::ExecuteTask(UBehaviorTreeComponent& OwnerComp, ui
 			EResourceType Resource;
 			int32 Value;
 			Interface->RemoveResource(Resource,Value);
-			if (IResourceInterface* ResourceInterface = Cast<IResourceInterface>(BlackboardComponent->GetValueAsObject(GiveTo.SelectedKeyName)))
+			if (IResourceInterface* ResourceInterface = Cast<IResourceInterface>(GetWorld()->GetAuthGameMode()))
 			{
 				ResourceInterface->AddResource(Resource,Value);
 			}
 		}
-		// OwnerComp를 const로 전달할 수 있도록 수정
+
 		FinishExecute(true);
-	}),Interact,false);
+	}),Delay,false);
 	
 	return	EBTNodeResult::InProgress;
 	
-}
-
-EBTNodeResult::Type UBTT_Work::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
-{
-	Interactable->EndWobble();
-
-	return EBTNodeResult::Failed;
 }

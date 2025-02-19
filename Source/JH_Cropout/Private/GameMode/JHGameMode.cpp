@@ -59,9 +59,11 @@ void AJHGameMode::GetSpawnRef()
 void AJHGameMode::AddResource(EResourceType Resource, int32 Value)
 {
 	const int32* FoundValue = Resources.Find(Resource);
-	Resources.Add(Resource, *FoundValue + Value);
+	const int32 FValue = FoundValue ? *FoundValue : 0;
 
-	OnUpdateResources.Execute(Resource,*FoundValue);
+	Resources.Add(Resource, FValue + Value);
+	
+	OnUpdateResources.Broadcast(Resource,FValue);
 
 	if(IJHGameInstanceInterface* JIF = Cast<IJHGameInstanceInterface>(UGameplayStatics::GetGameInstance(this)))
 	{
@@ -89,7 +91,7 @@ void AJHGameMode::RemoveTargetResource(EResourceType Resource, int32 InValue)
 	Resources.Add(Resource,*FindValue - InValue);
 	if(OnUpdateResources.IsBound())
 	{
-		OnUpdateResources.Execute(Resource,*FindValue);
+		OnUpdateResources.Broadcast(Resource,*FindValue);
 	}
 
 	//If food drops below 0, show end game screen with Lose condition

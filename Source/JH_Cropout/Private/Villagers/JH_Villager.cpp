@@ -170,6 +170,44 @@ void AJH_Villager::PlayWorkAnim(float Delay)
 	
 }
 
+float AJH_Villager::PlayDeliverAnim()
+{
+	check(VillagerMontage);
+	PlayVillagerAnim(VillagerMontage,1);
+	return 1;
+}
+
+void AJH_Villager::AddResource(EResourceType Resource, int32 Value)
+{
+	//Set currently held resource and value
+	ResourcesHeld = Resource;
+	Quantity = Value;
+
+	//Set Box to visible
+	Tool->SetVisibility(true);
+	check(CrateMesh);
+	Tool->SetStaticMesh(CrateMesh);
+}
+
+void AJH_Villager::RemoveResource(EResourceType& OutResource, int32& OutValue)
+{
+	//Store Resource type and value locally
+	EResourceType CacheResource = ResourcesHeld;
+	int32 CacheValue = Quantity;
+
+	//Clear resource and value
+	ResourcesHeld = EResourceType::None;
+	Quantity = 0;
+
+	//Hide Crate
+	Tool->SetVisibility(false);
+	Tool->SetStaticMesh(nullptr);
+
+	//Send locally stored values
+	OutResource = CacheResource;
+	OutValue = CacheValue;
+}
+
 void AJH_Villager::AsyncLoadBehaviorTree()
 {
 	AAIController* AC = Cast<AAIController>(GetController());
