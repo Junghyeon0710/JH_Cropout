@@ -46,7 +46,7 @@ EBTNodeResult::Type UBTT_Work::ExecuteTask(UBehaviorTreeComponent& OwnerComp, ui
 		}
 		// OwnerComp를 const로 전달할 수 있도록 수정
 		FinishExecute(true);
-	}),Interact,false);
+	}),Interact+.1,false);
 	
 	return	EBTNodeResult::InProgress;
 	

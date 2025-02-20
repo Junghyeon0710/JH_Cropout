@@ -63,7 +63,7 @@ void AJHGameMode::AddResource(EResourceType Resource, int32 Value)
 
 	Resources.Add(Resource, FValue + Value);
 	
-	OnUpdateResources.Broadcast(Resource,FValue);
+	OnUpdateResources.Broadcast(Resource,FValue + Value);
 
 	if(IJHGameInstanceInterface* JIF = Cast<IJHGameInstanceInterface>(UGameplayStatics::GetGameInstance(this)))
 	{

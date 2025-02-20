@@ -40,8 +40,9 @@ public:
 	void SetProgressionState(float Progression);
 	void PlacementMode();
 
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintNativeEvent)
 	void PlayWobble(FVector NewParam);
+	virtual void PlayWobble_Implementation(FVector NewParam);
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void EndWobble();

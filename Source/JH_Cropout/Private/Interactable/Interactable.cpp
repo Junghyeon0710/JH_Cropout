@@ -153,5 +153,10 @@ void AInteractable::PlacementMode()
 	
 }
 
+void AInteractable::PlayWobble_Implementation(FVector NewParam)
+{
+	//PlayWobble(NewParam);
+}
+
 
 

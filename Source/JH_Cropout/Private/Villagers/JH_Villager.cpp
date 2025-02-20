@@ -39,10 +39,10 @@ AJH_Villager::AJH_Villager()
 	SkeletalMesh->SetupAttachment(RootComponent);
 
 	Tool = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Tool"));
-	Tool->SetupAttachment(SkeletalMesh);
+	Tool->SetupAttachment(SkeletalMesh,FName("hand_rSocket"));
 
 	Hat = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Hat"));
-	Hat->SetupAttachment(SkeletalMesh);
+	Hat->SetupAttachment(SkeletalMesh,FName("headSocket"));
 
 	Hair = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Hair"));
 	Hair->SetupAttachment(SkeletalMesh);
