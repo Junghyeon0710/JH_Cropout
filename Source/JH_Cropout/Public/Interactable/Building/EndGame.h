@@ -13,5 +13,6 @@ UCLASS()
 class JH_CROPOUT_API AEndGame : public ABuildingBase
 {
 	GENERATED_BODY()
-	
+public:
+	virtual void ConstructionComplete() override;
 };

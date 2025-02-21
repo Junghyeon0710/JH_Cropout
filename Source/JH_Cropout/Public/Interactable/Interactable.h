@@ -37,8 +37,8 @@ public:
 	FTransformTexture TransformToTexture(FVector2d InVector);
 
 	virtual float Interact();
-	void SetProgressionState(float Progression);
-	void PlacementMode();
+	virtual void SetProgressionState(float Progression);
+	virtual void PlacementMode();
 
 	UFUNCTION(BlueprintNativeEvent)
 	void PlayWobble(FVector NewParam);

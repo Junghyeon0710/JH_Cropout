@@ -17,6 +17,7 @@ protected:
 	virtual void OnConstruction(const FTransform& Transform) override;
 
 	virtual float Interact() override;
+	virtual void SetProgressionState(float Progression) override;
 
 	void FarmingProgress(float& OutDelay, int32& Stage);
 	void SwitchStage();

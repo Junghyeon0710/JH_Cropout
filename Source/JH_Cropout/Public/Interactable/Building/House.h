@@ -13,5 +13,13 @@ UCLASS()
 class JH_CROPOUT_API AHouse : public ABuildingBase
 {
 	GENERATED_BODY()
+public:
+	AHouse();
 	
+	virtual void ConstructionComplete() override;
+	virtual void PlacementMode() override;
+	void SpawnVillagers() const;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UBoxComponent> BoxComponent;
 };

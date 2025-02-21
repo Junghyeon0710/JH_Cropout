@@ -13,5 +13,18 @@ UCLASS()
 class JH_CROPOUT_API ABuildingBase : public AInteractable
 {
 	GENERATED_BODY()
+public:
+	virtual float Interact() override;
+
+	float ProgressConstruct(float InvestedTime);
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	int32 CurrentStage;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	float BuildDifficulty;
+
+	virtual void SpawnInBuildMode(float Progression);
+	virtual void ConstructionComplete();
 	
 };

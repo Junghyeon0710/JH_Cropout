@@ -24,6 +24,12 @@ float ABaseCrop::Interact()
 	return Delay;
 }
 
+void ABaseCrop::SetProgressionState(float Progression)
+{
+	Super::SetProgressionState(Progression);
+	SetReady();
+}
+
 void ABaseCrop::FarmingProgress(float& OutDelay, int32& Stage)
 {
 	
@@ -35,7 +41,10 @@ void ABaseCrop::FarmingProgress(float& OutDelay, int32& Stage)
 	{
 		TruncatedProgress = 0;
 	}
-	
+	else
+	{
+		TruncatedProgress++;
+	}
 	ProgressionState = float(TruncatedProgress);
 
 	OutDelay = CollectionTime;

@@ -18,6 +18,9 @@ public:
 	UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"))
 	static UJHGameInstance* GetJhGameInstance(const UObject* WorldContextObject);
 
+	UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"))
+	static AJHGameMode* GetJhGameMode(const UObject* WorldContextObject);
+
 	UFUNCTION(BlueprintPure)
 	static FVector SteppedPosition(const FVector& NewParam);
 };

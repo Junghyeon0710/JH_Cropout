@@ -45,6 +45,7 @@ public:
 
 	void PlayMusic(USoundBase* Audio,const float Volume,const bool Persist);
 	void StopMusic();
+	void EndGame(bool bIsWin);
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	TArray<float> SoundMixes;

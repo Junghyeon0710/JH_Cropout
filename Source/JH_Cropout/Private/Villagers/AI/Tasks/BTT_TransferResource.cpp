@@ -25,7 +25,7 @@ EBTNodeResult::Type UBTT_TransferResource::ExecuteTask(UBehaviorTreeComponent& O
 
 		if (IResourceInterface* Interface = Cast<IResourceInterface>(BBC->GetValueAsObject(GiveTo.SelectedKeyName)))
 		{
-			ResourceInterface->AddResource(Resource,Value);
+			Interface->AddResource(Resource,Value);
 		}
 	}
 

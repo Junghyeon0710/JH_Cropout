@@ -4,12 +4,18 @@
 #include "GameMode/JHBlueprintFunctionLibrary.h"
 
 #include "GameMode/JHGameInstance.h"
+#include "GameMode/JHGameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
 UJHGameInstance* UJHBlueprintFunctionLibrary::GetJhGameInstance(const UObject* WorldContextObject)
 {
 	return Cast<UJHGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject));
+}
+
+AJHGameMode* UJHBlueprintFunctionLibrary::GetJhGameMode(const UObject* WorldContextObject)
+{
+	return Cast<AJHGameMode>(UGameplayStatics::GetGameMode(WorldContextObject));
 }
 
 FVector UJHBlueprintFunctionLibrary::SteppedPosition(const FVector& NewParam)

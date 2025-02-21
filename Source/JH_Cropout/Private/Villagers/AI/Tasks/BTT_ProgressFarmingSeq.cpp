@@ -21,6 +21,10 @@ EBTNodeResult::Type UBTT_ProgressFarmingSeq::ExecuteTask(UBehaviorTreeComponent&
 		if (AInteractable* Interactable = Cast<AInteractable>(CropActor))
 		{
 			float Delay = Interactable->Interact();
+			if (IVillagersyInterface* VillagersInterface = Cast<IVillagersyInterface>(AIOwner->GetPawn()))
+			{
+				VillagersInterface->PlayWorkAnim(Delay);
+			}
 			if (IVillagersyInterface* Interface = Cast<IVillagersyInterface>(AIOwner->GetPawn()))
 			{
 				FTimerHandle Timer;
@@ -30,17 +34,23 @@ EBTNodeResult::Type UBTT_ProgressFarmingSeq::ExecuteTask(UBehaviorTreeComponent&
 					{
 						FinishExecute(false);
 					}
-
-					//Find new crop
-					BBC->SetValueAsObject(Crop.SelectedKeyName, nullptr);
-					FinishExecute(true);
-					
+					else
+					{
+						//Find new crop
+						BBC->SetValueAsObject(Crop.SelectedKeyName, nullptr);
+						FinishExecute(true);
+					}
 				}),Delay+.1,false);
 			}
 		}
 	}
+	else
+	{
+		BBC->SetValueAsObject(Crop.SelectedKeyName, nullptr);
+		FinishExecute(true);
+	}
 	
 	//Find new crop
-	BBC->SetValueAsObject(Crop.SelectedKeyName,nullptr);
-	return EBTNodeResult::Succeeded;
+	//BBC->SetValueAsObject(Crop.SelectedKeyName,nullptr);
+	return EBTNodeResult::InProgress;
 }
