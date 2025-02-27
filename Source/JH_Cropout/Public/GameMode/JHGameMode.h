@@ -48,7 +48,9 @@ public:
 	void LoadOrSpawnIslandAssets();
 
 	void BeginAsyncSpawning();
+	void SpawnVillagers(int32 AddCount);
 	void SpawnVillager();
+
 	void EndGame(bool bIsWin);
 	
 	FUpdateVillagers OnUpdateVillagers;

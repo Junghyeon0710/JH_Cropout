@@ -149,7 +149,9 @@ void AInteractable::PlacementMode()
 {
 	bEnableGroundBlend = false;
 	Mesh->SetStaticMesh(MeshList[0]);
-	Tags[0] = FName("PlacementMode");
+	TArray<FName> MakeArray;
+	MakeArray.Add("PlacementMode");
+	Tags = MakeArray;
 	
 }
 

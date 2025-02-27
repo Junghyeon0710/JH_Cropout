@@ -31,7 +31,7 @@ void AHouse::SpawnVillagers() const
 	static bool bDoOnce = false;
 	if (!bDoOnce)
 	{
-		UJHBlueprintFunctionLibrary::GetJhGameMode(this)->SpawnVillager();
+		UJHBlueprintFunctionLibrary::GetJhGameMode(this)->SpawnVillagers(VillagerCount);
 		bDoOnce = true;
 	}
 	

@@ -22,4 +22,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UBoxComponent> BoxComponent;
+
+	UPROPERTY(EditAnywhere)
+	int32 VillagerCount;
 };

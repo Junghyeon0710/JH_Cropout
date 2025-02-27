@@ -186,6 +186,21 @@ void AJHGameMode::BeginAsyncSpawning()
 	}));
 }
 
+void AJHGameMode::SpawnVillagers(int32 AddCount)
+{
+	for (int i =1;i<=AddCount;++i)
+	{
+		SpawnVillager();
+	}
+
+	OnUpdateVillagers.Execute(AddCount);
+
+	if (IJHGameInstanceInterface* Interface = Cast<IJHGameInstanceInterface>(GetGameInstance()))
+	{
+		Interface->UpdateAllVillagers();
+	}
+}
+
 void AJHGameMode::SpawnVillager()
 {
 	if (!TownHall) return; // TownHall이 nullptr이면 실행하지 않음.

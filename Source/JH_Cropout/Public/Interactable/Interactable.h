@@ -49,7 +49,7 @@ public:
 
 	//Progression
 	UPROPERTY(EditAnywhere,BlueprintReadOnly)
-	float ProgressionState;
+	float ProgressionState = 0;
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly)
 	bool RequireBuild = false;
