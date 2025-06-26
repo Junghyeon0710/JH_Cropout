@@ -52,4 +52,120 @@ Cropout은 언리얼 엔진 5 기반의 캐주얼 톱다운 RTS 게임 샘플 �
 언리얼 엔진의 **Geometry Script 기능**을 활용하여 실시간으로 **섬 형태의 메시를 생성**하는 예제입니다.  
 DynamicMesh 시스템을 활용해 **지형을 만들고, 솔리디파이(Solidify), 노멀 보정, 평탄화 및 UV 프로젝션**까지 처리합니다.
 
+```C++
+void AIslandGen::CreateIsland(bool SpawnMarkers)
+{
+	//Set Ref and Clear Old Data
+	DynamicMesh = DynamicMeshComponent->GetDynamicMesh();
+	DynamicMesh->Reset();
+	SpawnPoints.Empty();
+
+	for (int32 Index = 0; Index<=Islands ; ++Index )
+	{
+		//Append a bunch of cylinders together, this will form the basic Island Shape(실린더를 여러 개 추가하면 기본 아일랜드 모양이 됩니다)
+		Radius = UKismetMathLibrary::RandomFloatInRangeFromStream(Seed,IslandsSize.X,IslandsSize.Y);
+		const FVector Point = UKismetMathLibrary::Multiply_VectorVector(UKismetMathLibrary::RandomUnitVectorFromStream(Seed),FVector(MaxSpawnDistance / 2.f));
+		SpawnPoints.Add(FVector(Point.X,Point.Y,0.f));
+		FTransform SpawnTransform = UKismetMathLibrary::MakeTransform(FVector(SpawnPoints[Index].X,SpawnPoints[Index].Y,-800.f),FRotator::ZeroRotator);
+
+		UGeometryScriptLibrary_MeshPrimitiveFunctions::AppendCone(DynamicMesh,FGeometryScriptPrimitiveOptions(),SpawnTransform,Radius,Radius/4.f,1300.f,32,1.f);
+
+		//Create markers for use with spawning (Useful Later on)
+		if (SpawnMarkers)
+		{
+			GetWorld()->SpawnActor<AActor>(SpawnMarker,FTransform(SpawnPoints[Index]));
+		}
+	}
+
+	// Add a box to the base to join the cylinders together
+	const FTransform BoxSpawnTransform = FTransform(FVector(0.f,0.f,-800.f));
+	UDynamicMesh* BoxDynamicMesh = UGeometryScriptLibrary_MeshPrimitiveFunctions::AppendBox(DynamicMesh,FGeometryScriptPrimitiveOptions(),BoxSpawnTransform,MaxSpawnDistance + 10000.0, MaxSpawnDistance + 10000.0,400.f);
+
+	// Solidify mesh, smooth/tesselate/calc normals
+	FGeometryScript3DGridParameters GridParameters;
+	GridParameters.GridCellSize = 0.25f;
+	GridParameters.GridResolution = PlatformSwitch(60,50);
+	FGeometryScriptSolidifyOptions Options;
+	Options.GridParameters = GridParameters;
+	Options.ExtendBounds = 0.f;
+	Options.SurfaceSearchSteps = 64;
+	Options.bThickenShells = false;
+	Options.ShellThickness = 1.f;
+	
+	UDynamicMesh* SolidifyMesh = UGeometryScriptLibrary_MeshVoxelFunctions::ApplyMeshSolidify(BoxDynamicMesh,Options,nullptr);
+	UDynamicMesh* PerVertexNormals = UGeometryScriptLibrary_MeshNormalsFunctions::SetPerVertexNormals(SolidifyMesh,nullptr);
+
+	FGeometryScriptIterativeMeshSmoothingOptions GeometryScriptIterativeMeshSmoothingOptions;
+	GeometryScriptIterativeMeshSmoothingOptions.NumIterations =6;
+	GeometryScriptIterativeMeshSmoothingOptions.Alpha = 0.2f;
+	GeometryScriptIterativeMeshSmoothingOptions.EmptyBehavior = EGeometryScriptEmptySelectionBehavior::FullMeshSelection;
+	UDynamicMesh* SmoothinoMesh = UGeometryScriptLibrary_MeshDeformFunctions::ApplyIterativeSmoothingToMesh(PerVertexNormals,FGeometryScriptMeshSelection(),GeometryScriptIterativeMeshSmoothingOptions);
+
+	UDynamicMesh* PNTessellationMesh = UGeometryScriptLibrary_MeshSubdivideFunctions::ApplyPNTessellation(SmoothinoMesh, FGeometryScriptPNTessellateOptions(),PlatformSwitch(0,2));
+	
+	//Delete the section of the mesh not needed any more (Underside)
+	FGeometryScriptMeshPlaneCutOptions GeometryScriptMeshPlaneCutOptions;
+	GeometryScriptMeshPlaneCutOptions.bFillHoles = false;
+	GeometryScriptMeshPlaneCutOptions.bFillSpans = false;
+	GeometryScriptMeshPlaneCutOptions.bFlipCutSide = false;
+	GeometryScriptMeshPlaneCutOptions.UVWorldDimension = 1.f;
+	UDynamicMesh* MeshPlaneCut = UGeometryScriptLibrary_MeshBooleanFunctions::ApplyMeshPlaneCut(PNTessellationMesh,FTransform(FRotator(180.f,0.f,0.f),FVector(0.f,0.f,-390.f)),GeometryScriptMeshPlaneCutOptions);
+
+	//Flatten the top and Project uvs
+	UDynamicMesh* UVSMeshPlaneCut = UGeometryScriptLibrary_MeshBooleanFunctions::ApplyMeshPlaneCut(MeshPlaneCut,FTransform(), FGeometryScriptMeshPlaneCutOptions());
+	
+	UGeometryScriptLibrary_MeshUVFunctions::SetMeshUVsFromPlanarProjection(UVSMeshPlaneCut,0,FTransform(FRotator(),FVector(),FVector(100.f,100.f,100.f)), FGeometryScriptMeshSelection());
+
+	//Release all computer meshes and move the island slightly to retrigger nav mesh gen
+	ReleaseAllComputeMeshes();
+	AddActorWorldOffset(FVector(0.f,0.f,0.05f));
+
+	if (IIslandInterface* Interface = Cast<IIslandInterface>(UGameplayStatics::GetGameMode(this)))
+	{
+		Interface->IslandGenComplete();
+	}
+	
+	
+	// Set Island Col
+	check(MaterialParameterCollection);
+	FLinearColor LinearColor = UKismetMaterialLibrary::GetVectorParameterValue(this,MaterialParameterCollection,FName("GrassColour"));
+	float H;
+	float S;
+	float V;
+	float A;
+	UKismetMathLibrary::RGBToHSV(LinearColor,H,S,V,A);
+	FLinearColor ParamaterValue = UKismetMathLibrary::HSVToRGB(102.999725 + UKismetMathLibrary::RandomFloatInRangeFromStream(Seed,0.f,90.f),S,V,A );
+	UKismetMaterialLibrary::SetVectorParameterValue(this,MaterialParameterCollection,FName("GrassColour"),ParamaterValue);
+	
+}
+```
+-  랜덤 지형 생성을 위한 Seed 기반 `FRandomStream`
+-  여러 개의 실린더를 기반으로 섬 지형 구성
+-  Solidify, Smooth, Tessellate, Plane Cut 등 Geometry Script 단계별 처리
+-  MaterialParameterCollection을 통해 지형 색상 HSV 기반 랜덤화
+-  디버깅용 Spawn Marker 생성 가능
+-  GameMode의 인터페이스 콜백 (`IIslandInterface`) 연동
+
+TODO : Gif
+
+<br>
+
+# Procedural Island Generator & Spawner System
+
+언리얼 엔진 5의 Geometry Script와 네비게이션 시스템을 활용한 **프로시저럴 섬 생성 및 스폰 시스템**입니다.  
+게임 시작 시 섬을 생성하고, 네비게이션 빌드가 완료되면 자동으로 액터나 인스턴스를 배치합니다.
+
+---
+
+## 특징
+
+### 1. 프로시저럴 섬 생성
+
+- Geometry Script를 사용한 실시간 메시 생성
+- 실린더 + 박스 결합 후 솔리디파이(Solidify), 테셀레이션, UV 생성
+- 지형 부드럽게(Smoothing), 아래 잘라내기(Cut), 컬러 랜덤화 처리
+- `DynamicMeshComponent` 기반의 완전 절차적 메시
+
+
+
 
