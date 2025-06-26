@@ -48,6 +48,8 @@ Cropout은 언리얼 엔진 5 기반의 캐주얼 톱다운 RTS 게임 샘플 �
 
 <br>
 
-## 
+# Procedural Island Generator 
+언리얼 엔진의 **Geometry Script 기능**을 활용하여 실시간으로 **섬 형태의 메시를 생성**하는 예제입니다.  
+DynamicMesh 시스템을 활용해 **지형을 만들고, 솔리디파이(Solidify), 노멀 보정, 평탄화 및 UV 프로젝션**까지 처리합니다.
 
 
