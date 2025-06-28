@@ -1,4 +1,4 @@
-# Unreal5 : JH_Cropout
+![image](https://github.com/user-attachments/assets/cc0659f3-f248-4c34-a827-d08507432d14)# Unreal5 : JH_Cropout
 학습 목적으로 제작된 Unreal Engine 5의 대표적인 게임 [Cropout Sample](https://www.unrealengine.com/en-US/blog/cropout-casual-rts-game-sample-project) 샘플 클론 프로젝트입니다.
 블루프린트로 제작 된 샘플을 C++로 만들었습니다.
 
@@ -45,6 +45,7 @@ Cropout은 언리얼 엔진 5 기반의 캐주얼 톱다운 RTS 게임 샘플 �
 
 
 ## 영상
+[![Video Thumbnail](https://img.youtube.com/vi/9zKp4cXuJ1Q/0.jpg)](https://www.youtube.com/watch?v=9zKp4cXuJ1Q)
 
 <br>
 
@@ -150,22 +151,219 @@ TODO : Gif
 
 <br>
 
-# Procedural Island Generator & Spawner System
+# Spawner 시스템
 
-언리얼 엔진 5의 Geometry Script와 네비게이션 시스템을 활용한 **프로시저럴 섬 생성 및 스폰 시스템**입니다.  
-게임 시작 시 섬을 생성하고, 네비게이션 빌드가 완료되면 자동으로 액터나 인스턴스를 배치합니다.
+언리얼 엔진용 랜덤 오브젝트/인스턴스 배치 시스템입니다.  
+네비게이션 데이터 기반으로 클래스 또는 인스턴스를 자동 배치하며, 비동기 로딩과 커스텀 설정을 지원합니다.
 
 ---
 
-## 특징
+### 비동기 클래스 로드 (Async Load)
+`ASpawner::AsyncLoadClass()` 함수는 `SpawnTypes` 배열에 저장된 클래스들을  
+비동기(Async) 방식으로 순차적으로 로드하는 기능을 담당합니다.
 
-### 1. 프로시저럴 섬 생성
+```C++
+void ASpawner::AsyncLoadClass()
+{
+    FSoftObjectPath SoftObjectPath(SpawnTypes[ClassRefIndex].ClassRef.ToSoftObjectPath());
 
-- Geometry Script를 사용한 실시간 메시 생성
-- 실린더 + 박스 결합 후 솔리디파이(Solidify), 테셀레이션, UV 생성
-- 지형 부드럽게(Smoothing), 아래 잘라내기(Cut), 컬러 랜덤화 처리
-- `DynamicMeshComponent` 기반의 완전 절차적 메시
+    UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftObjectPath, FStreamableDelegate::CreateLambda([this]()
+    {
+        ClassRefIndex++;
 
+        if (ClassRefIndex > SpawnTypes.Num() - 1)
+        {
+            bAsyncComplete = true; // 모든 클래스 로드 완료
+        }
+        else
+        {
+            AsyncLoadClass(); // 다음 클래스 로드 재귀 호출
+        }
+    }));
+}
+```
 
+- `SpawnTypes[ClassRefIndex].ClassRef`에서 `FSoftObjectPath`를 생성
+- `UAssetManager`의 `RequestAsyncLoad`를 호출해 해당 에셋을 비동기 로딩
+- 로딩 완료 시 호출되는 람다(Callback) 내에서 다음 클래스 로딩 재귀 호출
+- 모든 클래스가 로딩 완료되면 `bAsyncComplete` 플래그를 `true`로 설정
+
+<br>
+
+## 액터 클래스 기반 스폰 함수 (`SpawnAssets`)
+
+`SpawnAssets` 함수는 지정된 액터 클래스를 네비게이션 시스템을 활용해  
+맵 내 여러 랜덤 위치에 스폰하는 기능을 담당합니다.
+
+```C++
+void ASpawner::SpawnAssets(TSubclassOf<AActor> Class, const FSpawnData& SpawnParams)
+{
+	// Spawn of Class
+	int LocalCount = 0;
+	int32 BiomeCount = SpawnParams.BiomeCount;
+	for (int Index = 0; Index <= BiomeCount ;++Index)
+	{
+		
+		if (UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetCurrent(GetWorld()))
+		{
+			FNavLocation RandomLocation;
+			//NavSystem->K2_GetRandomLocationInNavigableRadius()
+			NavSystem->GetRandomPointInNavigableRadius(FVector::ZeroVector,10000.f,RandomLocation,NavData);
+
+			//Pick Points around Biome Points
+			int32 RandomCount = UKismetMathLibrary::RandomIntegerFromStream(Seed,SpawnParams.SpawnPerBiome);
+
+			for (int i =0; i <= RandomCount; ++i)
+			{
+				FNavLocation SpawnPos;
+				NavSystem->GetRandomPointInNavigableRadius(RandomLocation.Location,SpawnParams.BiomeScale,SpawnPos);
+
+				FTransform SpawnTransform;
+				SpawnTransform.SetLocation(SteppedPosition(SpawnPos.Location));
+				SpawnTransform.SetRotation(FRotator(0.f,UKismetMathLibrary::RandomFloatInRange(0,SpawnParams.RandomRotationRange),0.f).Quaternion());
+				SpawnTransform.SetScale3D(FVector(UKismetMathLibrary::RandomFloatInRange(1.f,SpawnParams.ScaleRange+1.f)));
+
+				FActorSpawnParameters SpawnParameters;
+				SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+				AActor* Actor = GetWorld()->SpawnActor<AActor>(Class,SpawnTransform,SpawnParameters);
+				LocalCount++;
+
+				if (IIslandInterface* Interface = Cast<IIslandInterface>(Actor))
+				{
+					Interface->ScaleUp(LocalCount / TotalCounter);
+				}
+			}
+		}
+	}
+}
+```
+
+- `SpawnParams.BiomeCount` 만큼 루프를 돌며 각 바이옴 영역을 대표하는 랜덤 위치 선택  
+- 내비게이션 시스템(`UNavigationSystemV1`)을 사용해 `GetRandomPointInNavigableRadius`로 네비게이션 가능한 위치 얻기  
+- 각 바이옴 위치 주변 반경(`BiomeScale`) 내에서 `SpawnPerBiome` 만큼 랜덤 위치를 다시 선택하여 액터 스폰  
+- 스폰 시 위치는 `SteppedPosition` 함수로 그리드에 맞춰 보정  
+- 회전과 스케일은 `SpawnParams`에 정의된 랜덤 범위 내에서 설정  
+- 액터가 `IIslandInterface`를 구현하고 있으면, 비율에 따라 `ScaleUp` 콜백 호출
+
+<br>
+
+## Spawner 시스템에서 클론코딩 하다 생긴 문제
+> 샘플에서 Spawn Instances를 하는 블프 코드
+![Image](https://github.com/user-attachments/assets/f57316ea-cf3f-406d-a8ff-99842d7925de)
+
+Add Instanced Static Mesh Component쪽을 들어가보면
+```C++
+UFUNCTION(BlueprintCallable, meta=(ScriptNoExport, BlueprintInternalUseOnly = "true", DefaultToSelf="ComponentTemplateContext", InternalUseParam="ComponentTemplateContext,bDeferredFinish"))
+ENGINE_API UActorComponent* AddComponent(FName TemplateName, bool bManualAttachment, const FTransform& RelativeTransform, const UObject* ComponentTemplateContext, bool bDeferredFinish = false);
+```
+
+블루프린트에서 "Add Instanced Static Mesh Component" 노드를 클릭하면
+다음의 C++ 함수 선언부로 이동하게 된다.
+
+- 해당 노드는 런타임에 컴포넌트를 생성하는 함수인 AddComponent()와 연결되어 있으며,
+내부적으로 TemplateName을 통해 어떤 컴포넌트를 추가할지 지정한다.
+
+- AddComponent()는 BlueprintInternalUseOnly = "true"와 ScriptNoExport 메타 태그가 설정되어 있어
+블루프린트 상에서는 사용자에게 직접 노출되지 않지만,
+엔진 내부에서는 자동으로 생성된 노드와 연결된다.
+
+- "Add Instanced Static Mesh Component"라는 노드는
+내부적으로 "NODE_AddInstancedStaticMeshComponent"와 같은 이름을 가진
+템플릿 기반 컴포넌트를 생성하는 호출이며,
+해당 노드가 실행될 때 결국 AddComponent()를 통해 컴포넌트가 실제로 생성된다.
+
+즉 이 함수는 C++로 호출로 해봤자 생성이 안된다.
+
+<br>
+
+## 해결방법
+> BP_Spawner
+
+![Image](https://github.com/user-attachments/assets/37a48266-35fc-45d4-a4ac-4f18a7b399fc)
+-블루프린트 BeginPlay에서 Add Instanced Static Mesh Component 노드를 호출해
+런타임에 메시 컴포넌트를 동적으로 추가합니다.
+
+```C++
+if (UInstancedStaticMeshComponent* StaticMeshComponent = Cast<UInstancedStaticMeshComponent>(AddComponent(FName("NODE_AddInstancedStaticMeshComponent-3"),false,FTransform(),this)))
+		{
+			IndexCounter++;
+			checkf(SpawnInstances[IndexCounter].ClassRef,TEXT("No StaticMesh"))
+			FSpawnInstance Instance = SpawnInstances[IndexCounter];
+			StaticMeshComponent->SetStaticMesh(Instance.ClassRef);
+			SpawnInst(StaticMeshComponent,Instance.BiomeScale,Instance.BiomeCount,Instance.SpawnPerBiome);
+			if (IndexCounter >= SpawnTypes.Num())
+			{
+				if (bCallSave)
+				{
+					FinishSpawning();
+				}
+			}
+			else
+			{
+				GetWorld()->GetTimerManager().UnPauseTimer(NavCheckHandle);
+			}
+		}
+		
+	}
+```
+- 그런 다음에 "NODE_AddInstancedStaticMeshComponent"라는 템플릿 이름으로 AddComponent를 호출해줌
+
+>AddComponent.cpp
+```C++
+UActorComponent* AActor::AddComponent(FName TemplateName, bool bManualAttachment, const FTransform& RelativeTransform, const UObject* ComponentTemplateContext, bool bDeferredFinish)
+{
+	if (const UWorld* World = GetWorld())
+	{
+		if (World->bIsTearingDown)
+		{
+			UE_LOG(LogActor, Warning, TEXT("AddComponent failed for actor: [%s] with param TemplateName: [%s] because we are in the process of tearing down the world")
+				, *GetName()
+				, *TemplateName.ToString());
+			return nullptr;
+		}
+	}
+	else
+	{
+		UE_LOG(LogActor, Warning, TEXT("AddComponent failed for actor: [%s] with param TemplateName: [%s] because world == nullptr")
+			, *GetName()
+			, *TemplateName.ToString());
+		return nullptr;
+	}
+
+	UActorComponent* Template = nullptr;
+	FBlueprintCookedComponentInstancingData* TemplateData = nullptr;
+	for (UClass* TemplateOwnerClass = (ComponentTemplateContext != nullptr) ? ComponentTemplateContext->GetClass() : GetClass()
+		; TemplateOwnerClass && !Template && !TemplateData
+		; TemplateOwnerClass = TemplateOwnerClass->GetSuperClass())
+	{
+		if (UBlueprintGeneratedClass* BPGC = Cast<UBlueprintGeneratedClass>(TemplateOwnerClass))
+		{
+			// Use cooked instancing data if available (fast path).
+			if (BPGC->UseFastPathComponentInstancing())
+			{
+				TemplateData = BPGC->CookedComponentInstancingData.Find(TemplateName);
+			}
+			
+			if (!TemplateData || !TemplateData->bHasValidCookedData
+				|| !ensureMsgf(TemplateData->ComponentTemplateClass != nullptr, TEXT("AddComponent fast path (%s.%s): Cooked data is valid, but runtime support data is not initialized. Using the slow path instead."), *BPGC->GetName(), *TemplateName.ToString()))
+			{
+				Template = BPGC->FindComponentTemplateByName(TemplateName);
+			}
+		}
+	}
+
+	UActorComponent* NewActorComp = TemplateData ? CreateComponentFromTemplateData(TemplateData) : CreateComponentFromTemplate(Template);
+
+	if (!bDeferredFinish)
+	{
+		FinishAddComponent(NewActorComp, bManualAttachment, RelativeTransform);
+	}
+
+	return NewActorComp;
+}
+```
+- 해당 정의쪽 보면 UBlueprintGeneratedClass*로 되어있으며 FindComponentTemplateByName로 TemplateName을 찾는거를 볼 수 있음
+- 즉 이함수는 블프가 아니면 아예 실행이 안되는 코드
+- BeginPlay에서 동적으로 생성해줘서 블프에서 이미 만든 TemplateName을 찾아서 C++에서도 호출 가능하게 해줌
 
 
