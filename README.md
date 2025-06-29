@@ -560,6 +560,7 @@ void UMainMenuActivatableWidget::NativeOnActivated()
 
 - 사용할 위젯에 테이블을 설정
 
+> Table
 ![Image](https://github.com/user-attachments/assets/2a40725a-aa1c-4da2-a796-b4157af40ed4)
 
 - 인풋 키 바인딩을 설정
