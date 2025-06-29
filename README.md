@@ -544,6 +544,27 @@ void UMainMenuActivatableWidget::NativeOnActivated()
 }
 ```
 - 초기화 함수 실행시 버튼 클릭 이벤트 람다함수, 바인드
+
+<br>
+
+## Common UI InputTable
+- `InputTable`은 `FCommonInputActionDataBase` 구조체 기반의 **DataTable**
+- UI 버튼에 **InputTag**를 설정하면 키보드/게임패드/모바일에 맞는 아이콘과 키 이름을 자동으로 표시
+
+<br>
+
+## 사용 방법
+> 사용 위젯
+
+![Image](https://github.com/user-attachments/assets/38b4f8cd-10b2-488b-ad26-de0f6e2a4a32)
+
+- 사용할 위젯에 테이블을 설정
+
+![Image](https://github.com/user-attachments/assets/2a40725a-aa1c-4da2-a796-b4157af40ed4)
+
+- 인풋 키 바인딩을 설정
+- Keyborad : BackSpace, Gamepad : Gamepad face Button Right
+- 해당 키 인풋시 자동 실행
 	
 
 
