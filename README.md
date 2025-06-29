@@ -353,6 +353,199 @@ UActorComponent* AActor::AddComponent(FName TemplateName, bool bManualAttachment
 	}
 
 	UActorComponent* NewActorComp = TemplateData ? CreateComponentFromTemplateData(TemplateData) : C행
+UActorComponent* NewActorComp = TemplateData ? CreateComponentFromTemplateData(TemplateData) : CreateComponentFromTemplate(Template);Add commentMore actions
+
+	if (!bDeferredFinish)
+	{Add commentMore actions
+		FinishAddComponent(NewActorComp, bManualAttachment, RelativeTransform);
+	}
+
+	return NewActorComp;
+}
+```
+- 해당 정의쪽 보면 UBlueprintGeneratedClass*로 되어있으며 FindComponentTemplateByName로 Templ듬
+
+<br>
+
+### 저장하기 (비동기)
+```C++
+void UJHGameInstance::SaveGame()
+{
+	FAsyncSaveGameToSlotDelegate Delegate;
+	Delegate.BindWeakLambda(this, [this](const FString&, int32, bool Success) {
+		bHasSave = Success;
+	});
+
+	UGameplayStatics::AsyncSaveGameToSlot(SaveGameRef, SaveName, 0, Delegate);
+}
+```
+- 비동기로 게임을 저장, 저장이 완료되면 람다로 함수 호출
+
+<br>
+
+### 데이터 업데이트 예시
+Interactable 오브젝트 저장
+```C++
+void UJHGameInstance::UpdateAllInteractables()
+{
+	SaveGameRef->Interactables.Empty();
+
+	TArray<AActor*> Actors;
+	UGameplayStatics::GetAllActorsOfClass(this, InteractableActorClass, Actors);
+
+	for (AActor* Actor : Actors)
+	{
+		AInteractable* Interactable = Cast<AInteractable>(Actor);
+		FSaveInteract Interact;
+		Interact.Location = Interactable->GetTransform();
+		Interact.Health = Interactable->GetProgressionState();
+		Interact.Type = Interactable->GetClass();
+		Interact.Tag = Interactable->Tags.IsValidIndex(0) ? Interactable->Tags[0] : FName();
+		
+		SaveGameRef->Interactables.Add(Interact);
+	}
+}
+```
+- 월드에 존재하는 모든 상호작용 가능한 액터 정보를 탐색
+- 해당 데이터를 `UJHSaveGame`의 `Interactables` 배열에 저장
+
+<br>
+  
+# Common UI
+`Cropout` 프로젝트는 언리얼의 Common UI 시스템을 활용하여  
+씬 전환, 로딩, 효과적인 HUD 관리를 처리합니다.
+
+<br>
+
+## ULayer_Menu_ActivatableWidget
+>코드
+
+```C++
+class UCommonActivatableWidgetStack;
+UCLASS()
+class JH_CROPOUT_API ULayer_Menu_ActivatableWidget : public UCommonActivatableWidget
+{
+	GENERATED_BODY()
+public:
+	void OnActivate();
+protected:
+
+	virtual void NativeOnActivated() override;
+	
+	void AddStackItem(const TSubclassOf<UCommonActivatableWidget>& InActivatableWidgetClass);
+	
+	UPROPERTY(meta = (BindWidget) , BlueprintReadOnly)
+	TObjectPtr<UCommonActivatableWidgetStack> MainStack;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UMainMenuActivatableWidget> ActivatableWidgetClass;
+};
+```
+
+- `Cropout` 프로젝트에서 **메인 메뉴 계층 관리**를 담당하는 `Common UI` 기반 위젯 클래스입니다.  
+- `UCommonActivatableWidgetStack`을 이용해 다양한 메뉴 위젯을 스택 방식으로 관리합니다.
+- `AddStackItem()`으로 메뉴 스택을 생성하고, 메인 메뉴 위젯을 추가하는 역할
+
+<br>
+
+## UMainMenuActivatableWidget
+Cropout 프로젝트의 **메인 메뉴 위젯 클래스**입니다.  
+Unreal의 **CommonUI 시스템**을 기반으로 구성되어 있으며, 세이브 여부에 따라 게임 진행, 새 게임, 종료, 기부 등의 기능을 제공합니다.
+>UMG
+![Image](https://github.com/user-attachments/assets/1dff38ac-626f-4735-9fd0-4e1e5756a55f)
+- 레이아웃 버튼들은 UPROPERTY(meta=(BindWidget), BlueprintReadWrite )같이 전부 바인드 처리
+
+```C++
+void UMainMenuActivatableWidget::NativeOnActivated()
+{
+	Super::NativeOnActivated();
+
+	//Reset focus on active (Get Desired Focus Target Is overriden function)
+	if (IsValid(GetDesiredFocusTarget()))
+	{
+		GetDesiredFocusTarget()->SetFocus();
+	};
+	
+
+	//Check if save exists
+	if (UGameplayStatics::GetGameInstance(this)->Implements<UJHGameInstanceInterface>())
+	{
+		if (IJHGameInstanceInterface* Interface = Cast<IJHGameInstanceInterface>(UGameplayStatics::GetGameInstance(this)))
+		{
+			bHasSave = Interface->CheckSaveBool();
+			BTN_Continue->SetIsEnabled(bHasSave); 
+		}
+	}
+
+	//Set Donate to only visible on mobile
+	const FString PlatformName = UGameplayStatics::GetPlatformName();
+	if (PlatformName == "Android" || PlatformName == "iOS" )
+	{
+		BTN_Donate->SetVisibility(ESlateVisibility::Visible);
+	}
+	BTN_Donate->SetVisibility(ESlateVisibility::Collapsed);
+
+	
+	// Button Events Bind
+	//Continue Game
+	BTN_Continue->OnClicked().AddLambda([this]()
+	{
+		if (!Level.IsNull())
+		{
+			UJHBlueprintFunctionLibrary::GetJhGameInstance(this)->OpenLevel(Level);
+		}
+	});
+
+	//If save game already exists, prompt for new game
+	BTN_NewGame->OnClicked().AddLambda([this]()
+	{
+		if (bHasSave)
+		{
+			if (StackRef.IsValid())
+			{
+				const FString Question = FString::Printf(TEXT("Starting a new game will override your current save. Do you want to continue?"));
+				UPromptActivatableWidget* PromptActivatableWidget = StackRef->AddWidget<UPromptActivatableWidget>(PromptWidgetClass);
+				PromptActivatableWidget->PromptQuestion = FText::FromString(Question);
+				PromptActivatableWidget->OnCallConfirm.BindUObject(this,&ThisClass::ConfirmNewGame);
+			}
+		}
+		else
+		{
+			ConfirmNewGame();
+		}
+	});
+
+	// If save game already exists, prompt for new game
+	BTN_Donate->OnClicked().AddLambda([this]()
+	{
+		if(bHasSave)
+		{
+			const FString Question = FString::Printf(TEXT("Would you like to donate £1.99 to help make the game better? "));
+			UPromptActivatableWidget* PromptActivatableWidget = StackRef->AddWidget<UPromptActivatableWidget>(PromptWidgetClass);
+			PromptActivatableWidget->PromptQuestion = FText::FromString(Question);
+			PromptActivatableWidget->OnCallConfirm.BindUObject(this, &ThisClass::ConfirmDonate);
+		}
+		else
+		{
+			ConfirmNewGame();
+		}
+	});
+
+	//Add Prompt and set question
+	BTN_Quit->OnClicked().AddLambda([this]()
+	{
+		const FString Question = FString::Printf(TEXT("Are you sure you want to quit?"));
+		UPromptActivatableWidget* PromptActivatableWidget = StackRef->AddWidget<UPromptActivatableWidget>(PromptWidgetClass);
+		PromptActivatableWidget->PromptQuestion = FText::FromString(Question);
+		PromptActivatableWidget->OnCallConfirm.BindUObject(this,&ThisClass::ConfirmQuit);
+	});
+
+	// ~Button Events Bind
+}
+```
+- 초기화 함수 실행시 버튼 클릭 이벤트 람다함수, 바인드
+	
+
 
 # Behavior Trees
 
