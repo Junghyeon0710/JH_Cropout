@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/cc0659f3-f248-4c34-a827-d08507432d14)# Unreal5 : JH_Cropout
+# Unreal5 : JH_Cropout
 학습 목적으로 제작된 Unreal Engine 5의 대표적인 게임 [Cropout Sample](https://www.unrealengine.com/en-US/blog/cropout-casual-rts-game-sample-project) 샘플 클론 프로젝트입니다.
 블루프린트로 제작 된 샘플을 C++로 만들었습니다.
 
@@ -50,7 +50,7 @@ Cropout은 언리얼 엔진 5 기반의 캐주얼 톱다운 RTS 게임 샘플 �
 <br>
 
 # Procedural Island Generator 
-언리얼 엔진의 **Geometry Script 기능**을 활용하여 실시간으로 **섬 형태의 메시를 생성**하는 예제입니다.  
+언리얼 엔진의 **Geometry Script 기능**을 활용하여 실시간으로 **섬 형태의 메시를 생성**하는 예제입니다.
 DynamicMesh 시스템을 활용해 **지형을 만들고, 솔리디파이(Solidify), 노멀 보정, 평탄화 및 UV 프로젝션**까지 처리합니다.
 
 ```C++
@@ -153,14 +153,14 @@ TODO : Gif
 
 # Spawner 시스템
 
-언리얼 엔진용 랜덤 오브젝트/인스턴스 배치 시스템입니다.  
-네비게이션 데이터 기반으로 클래스 또는 인스턴스를 자동 배치하며, 비동기 로딩과 커스텀 설정을 지원합니다.
+언리얼 엔진용 랜덤 오브젝트/인스턴스 배치 시스템 
+네비게이션 데이터 기반으로 클래스 또는 인스턴스를 자동 배치하며, 비동기 로딩과 커스텀 설정을 지원
 
 ---
 
 ### 비동기 클래스 로드 (Async Load)
 `ASpawner::AsyncLoadClass()` 함수는 `SpawnTypes` 배열에 저장된 클래스들을  
-비동기(Async) 방식으로 순차적으로 로드하는 기능을 담당합니다.
+비동기(Async) 방식으로 순차적으로 로드하는 기능을 담당
 
 ```C++
 void ASpawner::AsyncLoadClass()
@@ -193,7 +193,7 @@ void ASpawner::AsyncLoadClass()
 ## 액터 클래스 기반 스폰 함수 (`SpawnAssets`)
 
 `SpawnAssets` 함수는 지정된 액터 클래스를 네비게이션 시스템을 활용해  
-맵 내 여러 랜덤 위치에 스폰하는 기능을 담당합니다.
+맵 내 여러 랜덤 위치에 스폰하는 기능을 담당
 
 ```C++
 void ASpawner::SpawnAssets(TSubclassOf<AActor> Class, const FSpawnData& SpawnParams)
@@ -270,7 +270,7 @@ ENGINE_API UActorComponent* AddComponent(FName TemplateName, bool bManualAttachm
 - "Add Instanced Static Mesh Component"라는 노드는
 내부적으로 "NODE_AddInstancedStaticMeshComponent"와 같은 이름을 가진
 템플릿 기반 컴포넌트를 생성하는 호출이며,
-해당 노드가 실행될 때 결국 AddComponent()를 통해 컴포넌트가 실제로 생성된다.
+해당 노드가 실행될 때 결국 AddComponent()를 통해 컴포넌트가 실제로 생성
 
 즉 이 함수는 C++로 호출로 해봤자 생성이 안된다.
 
@@ -280,31 +280,31 @@ ENGINE_API UActorComponent* AddComponent(FName TemplateName, bool bManualAttachm
 > BP_Spawner
 
 ![Image](https://github.com/user-attachments/assets/37a48266-35fc-45d4-a4ac-4f18a7b399fc)
--블루프린트 BeginPlay에서 Add Instanced Static Mesh Component 노드를 호출해
-런타임에 메시 컴포넌트를 동적으로 추가합니다.
 
+- 블루프린트 BeginPlay에서 Add Instanced Static Mesh Component 노드를 호출해
+런타임에 메시 컴포넌트를 동적으로 추가
+
+>실제 사용할 코드
 ```C++
 if (UInstancedStaticMeshComponent* StaticMeshComponent = Cast<UInstancedStaticMeshComponent>(AddComponent(FName("NODE_AddInstancedStaticMeshComponent-3"),false,FTransform(),this)))
+ {
+	IndexCounter++;
+	checkf(SpawnInstances[IndexCounter].ClassRef,TEXT("No StaticMesh"))
+	FSpawnInstance Instance = SpawnInstances[IndexCounter];
+	StaticMeshComponent->SetStaticMesh(Instance.ClassRef);
+	SpawnInst(StaticMeshComponent,Instance.BiomeScale,Instance.BiomeCount,Instance.SpawnPerBiome);
+	if (IndexCounter >= SpawnTypes.Num())
+    	{
+		if (bCallSave)
 		{
-			IndexCounter++;
-			checkf(SpawnInstances[IndexCounter].ClassRef,TEXT("No StaticMesh"))
-			FSpawnInstance Instance = SpawnInstances[IndexCounter];
-			StaticMeshComponent->SetStaticMesh(Instance.ClassRef);
-			SpawnInst(StaticMeshComponent,Instance.BiomeScale,Instance.BiomeCount,Instance.SpawnPerBiome);
-			if (IndexCounter >= SpawnTypes.Num())
-			{
-				if (bCallSave)
-				{
-					FinishSpawning();
-				}
-			}
-			else
-			{
-				GetWorld()->GetTimerManager().UnPauseTimer(NavCheckHandle);
-			}
+    	  	  FinishSpawning();
 		}
-		
-	}
+    	}
+	else
+	{
+	   GetWorld()->GetTimerManager().UnPauseTimer(NavCheckHandle);
+	}		
+}
 ```
 - 그런 다음에 "NODE_AddInstancedStaticMeshComponent"라는 템플릿 이름으로 AddComponent를 호출해줌
 
@@ -362,16 +362,54 @@ UActorComponent* AActor::AddComponent(FName TemplateName, bool bManualAttachment
 	return NewActorComp;
 }
 ```
-- 해당 정의쪽 보면 UBlueprintGeneratedClass*로 되어있으며 FindComponentTemplateByName로 TemplateName을 찾는거를 볼 수 있음
-- 즉 이함수는 블프가 아니면 아예 실행이 안되는 코드
-- BeginPlay에서 동적으로 생성해줘서 블프에서 이미 만든 TemplateName을 찾아서 C++에서도 호출 가능하게 해줌
+- 해당 정의쪽 보면 UBlueprintGeneratedClass*로 되어있으며 FindComponentTemplateByName로 Templ듬
 
 <br>
 
-# Save System
+### 저장하기 (비동기)
+```C++
+void UJHGameInstance::SaveGame()
+{
+	FAsyncSaveGameToSlotDelegate Delegate;
+	Delegate.BindWeakLambda(this, [this](const FString&, int32, bool Success) {
+		bHasSave = Success;
+	});
+
+	UGameplayStatics::AsyncSaveGameToSlot(SaveGameRef, SaveName, 0, Delegate);
+}
+```
+- 비동기로 게임을 저장, 저장이 완료되면 람다로 함수 호출
 
 <br>
 
+### 데이터 업데이트 예시
+Interactable 오브젝트 저장
+```C++
+void UJHGameInstance::UpdateAllInteractables()
+{
+	SaveGameRef->Interactables.Empty();
+
+	TArray<AActor*> Actors;
+	UGameplayStatics::GetAllActorsOfClass(this, InteractableActorClass, Actors);
+
+	for (AActor* Actor : Actors)
+	{
+		AInteractable* Interactable = Cast<AInteractable>(Actor);
+		FSaveInteract Interact;
+		Interact.Location = Interactable->GetTransform();
+		Interact.Health = Interactable->GetProgressionState();
+		Interact.Type = Interactable->GetClass();
+		Interact.Tag = Interactable->Tags.IsValidIndex(0) ? Interactable->Tags[0] : FName();
+		
+		SaveGameRef->Interactables.Add(Interact);
+	}
+}
+```
+- 월드에 존재하는 모든 상호작용 가능한 액터 정보를 탐색
+- 해당 데이터를 `UJHSaveGame`의 `Interactables` 배열에 저장
+
+<br>
+  
 # Common UI
 
 <br>
