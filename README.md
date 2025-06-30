@@ -570,8 +570,140 @@ void UMainMenuActivatableWidget::NativeOnActivated()
 
 
 # Behavior Trees
+Cropout은 AI의 행동을 Unreal Engine의 **Behavior Tree (BT)** 시스템을 활용해 구성
+
+---
+
+| 구성 요소        | 설명 |
+|------------------|------|
+| **Behavior Tree** | AI의 행동 결정 로직을 트리 형태로 정의 |
+| **Blackboard**   | 트리에서 사용하는 변수 저장소 (예: Target, Location 등) |
+| **Task Nodes**   | AI가 수행할 실제 작업 정의 (예: 이동, 대기, 수확 등) |
+| **Decorator**    | 조건 판단 (예: 체력이 50% 이상이면 진행) |
+| **Service**      | 주기적으로 상태 체크/갱신 (예: 플레이어 감지) |
+
+---
+
+> Tasks는 C++ 로 구현되어있습니다.
+
+![image](https://github.com/user-attachments/assets/117fe8c8-7f24-4458-addd-2a07fcce68d0)
+
+<br>
 
 
+### BT_Idle
+![Image](https://github.com/user-attachments/assets/5718d50e-38d7-4652-8160-658bca6c5a50)
 
+- EQS로 타운 센터(마을 중심) 주변에서 무작위 지점을 찾아 그곳으로 이동
+- 원래 시퀀스(행동 순서)가 실패하면, AI를 타운 센터 주변의 새로운 위치로 리셋
+
+<br>
+
+### BT_Build
+
+![Image](https://github.com/user-attachments/assets/65e21b91-1fac-4ea2-9d90-dbbab98155f0)
+
+- 초기 데이터를 받아서 작업을 준비
+- 목표 건물 위치로 이동한 다음 건설을 진행
+- 만약 새로운 건물을 더 이상 찾지 못하면 행동을 멈추고 대기 상태로 전환
+
+<br>
+
+### BT_CollectResource
+Cropout에서 마을 주민의 자원 수집 행동
+
+![Image](https://github.com/user-attachments/assets/b826c10a-36d7-47b8-b6c5-7707cfd68257)
+- 1. 유효한 자원과 수집 지점이 있는지 확인
+   - 있음: 자원 위치로 이동하여 수집
+   - 없음: 기본 상태(Idle)로 돌아감
+2. 자원 위치로 이동 후 자원을 수집
+3. 수집 지점으로 이동하여 자원을 전달
+4. 자원 또는 수집 지점이 중간에 유효하지 않게 된 경우:
+   - 다음 유효한 자원 및 수집 지점을 찾음
+   - 찾지 못하면 기본 상태(Idle)로 복귀
+
+<br>
+
+### BT_Farming
+Cropout 게임의 마을 주민이 수행하는 작물 관련 AI 행동 트리
+
+![Image](https://github.com/user-attachments/assets/a797c2de-a493-4def-891b-340b8d057633)
+
+1. 수확할 자원(작물) 또는 수집 지점이 없으면 기본 상태(Idle)로 복귀
+   - 마을 주민은 자원 수집을 반복하지만,
+     자원이나 수집 지점이 사라지면 새로운 곳을 탐색함
+2. 작물 사이클의 각 단계를 순차적으로 처리
+   - 파종 → 성장 → 수확
+3. 작물 수확 (Harvest Crop)
+   - 수확 가능한 작물 위치로 이동
+   - 수확 작업 수행
+4. 파밍 플롯(Farm Plot) 찾기
+   - 이미 작물이 심어진 상태이거나, 수확 가능한 상태
+5. 사용할 수 있는 작물 위치 탐색
+6. 사용할 수 있는 대상(Target) 탐색
+
+
+<br>
+
+## Behavior Trees 불러오기
+AJH_Villager::ChangeJob
+
+``` C++
+void AJH_Villager::ChangeJob(FName NewJob)
+{
+	Job = NewJob;
+
+	if (!JobDataTable)
+	{
+		GEngine->AddOnScreenDebugMessage(-1,5.f,FColor::Red,TEXT("ERROR: Failed to Load Job"));
+		return;
+	}
+	
+	//Using Tags makes it much easier to quickly find actors with set properties without having to explicitly cast.
+	const FJob* JobData = JobDataTable->FindRow<FJob>(NewJob,TEXT(""));
+	if (!JobData)
+	{
+		return;
+	}
+
+	if (Tags.Find(NewJob) != -1)
+	{
+		return;
+	}
+
+	if (Tags.IsEmpty())
+	{
+		Tags.Add(NewJob);
+	}
+	else
+	{
+		Tags[0] = NewJob;
+	}
+
+	ResetJobState();
+
+	// The data table only stores soft references, which avoids loading in every possible behavior tree, tool and hat.
+
+	// This means we can store every job type in a single graph and not worry about loading in content that won't be used on the map.
+
+	FSoftObjectPath SoftObjectPath(JobData->BehaviorTree.ToSoftObjectPath());
+	UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftObjectPath, FStreamableDelegate::CreateUFunction(this,FName("AsyncLoadBehaviorTree")));
+
+	FSoftObjectPath AnimSoftObjectPath(JobData->WorkAnim.ToSoftObjectPath());
+	UAssetManager::GetStreamableManager().RequestAsyncLoad(AnimSoftObjectPath, FStreamableDelegate::CreateUFunction(this,FName("AsyncLoadAnimMontage")));
+
+	FSoftObjectPath HatSoftObjectPath(JobData->Hat.ToSoftObjectPath());
+	UAssetManager::GetStreamableManager().RequestAsyncLoad(HatSoftObjectPath, FStreamableDelegate::CreateUFunction(this,FName("AsyncLoadSkeletalMesh")));
+
+	FSoftObjectPath ToolSoftObjectPath(JobData->Tool.ToSoftObjectPath());
+	UAssetManager::GetStreamableManager().RequestAsyncLoad(ToolSoftObjectPath, FStreamableDelegate::CreateUFunction(this,FName("AsyncLoadStaticMesh")));
+	
+}
+```
+마을 주민의 직업을 설정하고 관련 리소스를 비동기로 로드하는 함수입니다.
+
+- 직업 태그 변경
+- 직업 데이터 테이블에서 직업 정보 조회
+- 해당 직업에 필요한 에셋 (비헤이비어 트리, 애니메이션, 장비 등) 비동기 로드
 
 
